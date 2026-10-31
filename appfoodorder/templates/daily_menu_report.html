@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>گزارش روزانه سفارشات - تفکیک منوها</title>
+    <style>
+        body { font-family: 'Vazir', Tahoma, sans-serif; background: #f4f7f8; margin: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-right: 5px solid #09ad46; padding-right: 15px; }
+        .filter-form { background: #eef2f3; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
+        .filter-form div { display: flex; flex-direction: column; }
+        .filter-form label { font-weight: bold; margin-bottom: 5px; }
+        .filter-form input, .filter-form button { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; }
+        .filter-form button { background-color: #09ad46; color: white; border: none; cursor: pointer; }
+        .range-info { background: #e9f7ef; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px 8px; text-align: center; }
+        th { background-color: #2c3e50; color: white; }
+        .grand-total { background-color: #ffecb3; font-weight: bold; }
+        .print-btn { display: inline-block; background-color: #17a2b8; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; margin-bottom: 15px; }
+        @media print { .print-btn, .filter-form { display: none; } body { background: white; } .container { box-shadow: none; padding: 0; } }
+        .menu-name { font-size: 0.8rem; color: #555; margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="#" onclick="window.print();return false;" class="print-btn">🖨️ پرینت گزارش</a>
+    <h1>📊 گزارش سفارشات به تفکیک روز و منو</h1>
+    
+    <form method="get" class="filter-form">
+        <div>
+            <label>از تاریخ (شمسی):</label>
+            <input type="text" name="start_date" placeholder="1404/01/01" value="{{ start_date_str }}" dir="ltr">
+        </div>
+        <div>
+            <label>تا تاریخ (شمسی):</label>
+            <input type="text" name="end_date" placeholder="1404/01/31" value="{{ end_date_str }}" dir="ltr">
+        </div>
+        <div>
+            <button type="submit">نمایش گزارش</button>
+        </div>
+    </form>
+    
+    <div class="range-info">
+        📅 بازه انتخابی: {{ start_date }} تا {{ end_date }}
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ردیف</th>
+                <th>روز هفته</th>
+                <th>تاریخ</th>
+                <th colspan="2">منوی ۱</th>
+                <th colspan="2">منوی ۲</th>
+                <th>مجموع روزانه</th>
+            </tr>
+            <tr>
+                <th></th><th></th><th></th>
+                <th>نام غذا</th><th>تعداد سفارش</th>
+                <th>نام غذا</th><th>تعداد سفارش</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><strong>{{ row.weekday }}</strong></td>
+                <td>{{ row.date }}</td>
+                <td>{{ row.menu1_name }}</td>
+                <td>{{ row.count1 }}</td>
+                <td>{{ row.menu2_name }}</td>
+                <td>{{ row.count2 }}</td>
+                <td><strong>{{ row.total }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8">هیچ سفارشی در این بازه یافت نشد.</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="grand-total">
+                <td colspan="4"><strong>جمع کل در بازه</strong></td>
+                <td><strong>{{ grand_total_menu1 }}</strong></td>
+                <td></td>
+                <td><strong>{{ grand_total_menu2 }}</strong></td>
+                <td><strong>{{ grand_total_all }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+    <div style="font-size:0.8rem; text-align:center; margin-top:20px;">
+        * تعداد سفارش‌های «حضور ندارد» (گزینه ۰) در این گزارش لحاظ نشده است.<br>
+        ** روزهای جمعه (تعطیل) نمایش داده نمی‌شوند.
+    </div>
+</div>
+</body>
+</html>

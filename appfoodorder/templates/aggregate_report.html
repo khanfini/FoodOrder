@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارش تجمیعی سفارشات غذا - امروز</title>
+    <style>
+        body {
+            font-family: 'Vazir', Tahoma, sans-serif;
+            background: #f4f7f8;
+            margin: 20px;
+            padding: 0;
+        }
+        .report-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-right: 5px solid #09ad46;
+            padding-right: 15px;
+            margin-top: 0;
+        }
+        .today-info {
+            background: #e9f7ef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .menu-info {
+            background: #fff3cd;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: bold;
+        }
+        .location-row {
+            background-color: #e3f2fd;
+            font-weight: bold;
+        }
+        .grand-total {
+            background-color: #ffecb3;
+            font-weight: bold;
+        }
+        .dept-row td:first-child {
+            padding-right: 20px;
+            text-align: right;
+        }
+        .print-btn {
+            display: inline-block;
+            background-color: #17a2b8;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .print-btn:hover {
+            background-color: #138496;
+        }
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            .print-btn {
+                display: none;
+            }
+            .report-container {
+                box-shadow: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="report-container">
+    <a href="#" onclick="window.print();return false;" class="print-btn">🖨️ پرینت گزارش</a>
+    <h1>📊 گزارش تجمیعی سفارشات غذا</h1>
+    <div class="today-info">
+        📅 تاریخ: {{ today_date }} - {{ weekday_str }}
+    </div>
+    <div class="menu-info">
+        🍽️ منوی امروز: {{ menu1_name }} | {{ menu2_name }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>دپارتمان / ساختمان</th>
+                <th>منوی ۱</th>
+                <th>منوی ۲</th>
+                <th>مجموع هر دپارتمان</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for location in report_data %}
+                <!-- ردیف ساختمان (جمع آن) -->
+                <tr class="location-row">
+                    <td><strong>{{ location.location }}</strong></td>
+                    <td><strong>{{ location.loc_menu1 }}</strong></td>
+                    <td><strong>{{ location.loc_menu2 }}</strong></td>
+                    <td><strong>{{ location.loc_menu1|add:location.loc_menu2 }}</strong></td>
+                </tr>
+                <!-- ردیف‌های دپارتمان‌های زیرمجموعه -->
+                {% for dept in location.departments %}
+                <tr class="dept-row">
+                    <td style="padding-right: 25px;">&nbsp;&nbsp;{{ dept.name }}</td>
+                    <td>{{ dept.menu1 }}</td>
+                    <td>{{ dept.menu2 }}</td>
+                    <td>{{ dept.total }}</td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+            <!-- جمع کل نهایی -->
+            <tr class="grand-total">
+                <td><strong>جمع کل غذا</strong></td>
+                <td><strong>{{ grand_total_menu1 }}</strong></td>
+                <td><strong>{{ grand_total_menu2 }}</strong></td>
+                <td><strong>{{ grand_total_all }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    <div style="font-size:0.8rem; color:#666; text-align:center; margin-top:20px;">
+        * این گزارش بر اساس سفارش‌های ثبت‌شده در سامانه برای امروز تهیه شده است.
+    </div>
+</div>
+</body>
+</html>

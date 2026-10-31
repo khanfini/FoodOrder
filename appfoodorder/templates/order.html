@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سامانه سفارش غذا</title>
+    <style>
+        body {
+            font-family: "Vazir", sans-serif;
+            background-color: #f4f7f8;
+            margin: 0;
+            padding: 20px 0;
+            color: #333;
+        }
+
+        header {
+            background-color: #34495e;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* ستون سمت چپ (منوهای آینده) */
+        .sidebar {
+            flex: 0 0 260px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 15px;
+            font-size: 0.9rem;
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            color: #09ad46;
+            border-bottom: 2px solid #09ad46;
+            padding-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            padding: 8px 5px;
+            border-bottom: 1px solid #eee;
+            line-height: 1.4;
+        }
+
+        .sidebar li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar .menu-date {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .sidebar .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: 3px;
+            font-size: 0.82rem;
+            color: #555;
+        }
+
+        .menu-items span {
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: #f1f8e9;
+        }
+
+        /* محتوای اصلی (راست) */
+        .content {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .print-btn {
+            display: block;
+            margin: 0 auto 15px;
+            padding: 10px 20px;
+            background-color: #17a2b8;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            width: fit-content;
+            transition: background 0.2s;
+        }
+
+        .print-btn:hover {
+            background-color: #138496;
+        }
+
+        /* جعبه اطلاعات - هر خط جداگانه */
+        .info-box {
+            background: #e9f7ef;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        .info-line {
+            margin: 4px 0;
+        }
+        .info-box strong {
+            color: #155724;
+            display: inline-block;
+            min-width: 110px;
+        }
+        .info-box .no-menu {
+            color: #856404;
+            background: #fff3cd;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            margin-top: 0;
+            color: #34495e;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #09ad46;
+            padding-bottom: 5px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        form label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        form select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            direction: rtl;
+            font-family: inherit;
+        }
+
+        form button {
+            background-color: #09ad46;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        form button:hover {
+            background-color: #158936;
+        }
+
+        .list-section h2 {
+            color: #34495e;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #09ad46;
+            padding-bottom: 5px;
+            margin-top: 0;
+        }
+
+        .department {
+            margin-bottom: 20px;
+        }
+
+        .department h4 {
+            margin: 10px 0 5px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .member-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .member-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .member-card.green {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .member-card.yellow {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .member-card.red {
+            background-color: #f8d7da;
+            color: #721c25;
+        }
+
+        .member-card span {
+            font-weight: bold;
+        }
+
+        .stats {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .stats span {
+            font-weight: bold;
+            color: #0d47a1;
+        }
+
+        /* واکنش‌گرایی: در صفحه‌های کوچک ستون کناری زیر محتوا بیاید */
+        @media (max-width: 800px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: static;
+                flex: 0 0 auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>سامانه سفارش غذا</h1>
+</header>
+
+<div class="main-layout">
+
+    <!-- ستون سمت چپ: منوهای آینده -->
+    <aside class="sidebar">
+        <h3>📅 منوی روزهای آینده</h3>
+        {% if upcoming_menus %}
+            <ul>
+                {% for item in upcoming_menus %}
+                    <li>
+                        <div class="menu-date">{{ item.date }} ({{ item.weekday }})</div>
+                        <div class="menu-items">
+                            <span>🥘 {{ item.menu1 }}</span>
+                            {% if item.menu2 %}
+                                <span>🍛 {{ item.menu2 }}</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: #888;">منوی روزهای آینده ثبت نشده است.</p>
+        {% endif %}
+    </aside>
+
+    <!-- محتوای اصلی -->
+    <div class="content">
+
+        {% if user.is_superuser %}
+        <a href="{% url 'printable_list' %}" class="print-btn">
+            🖨️ چاپ لیست کامل اعضا و غذا برای رستوران
+        </a>
+        {% endif %}
+
+<!-- جعبه اطلاعات با چیدمان خطوط ترکیبی -->
+<div class="info-box">
+    <!-- خط اول: تاریخ و روز در یک خط -->
+    <div class="info-line">
+        <strong>تاریخ:</strong> {{ today_date_str }}
+        <span class="separator">•</span>
+        <strong>روز:</strong> {{ weekday_str }}
+    </div>
+
+    <!-- خط دوم: منوها (در یک خط) یا پیام جمعه -->
+    <div class="info-line">
+        {% if today_weekday != 6 %}
+            <strong>منوی غذایی یک:</strong> {{ menu1_name }}
+            <span class="separator">•</span>
+            <strong>منوی غذایی دو:</strong> {{ menu2_name }}
+        {% else %}
+            <strong class="no-menu">جمعه — غذایی ندارد</strong>
+        {% endif %}
+    </div>
+
+    <!-- خط سوم: ساختمان و دپارتمان در یک خط -->
+    <div class="info-line">
+        <strong>ساختمان:</strong> {{ location.name|default:"—" }}
+        <span class="separator">•</span>
+        <strong>دپارتمان:</strong> {{ department.name|default:"—" }}
+    </div>
+</div>
+
+        <!-- دیباگ (اختیاری) -->
+        <!-- {% if debug_info %}
+        <div style="background:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:15px; font-family:monospace; white-space:pre-wrap;">
+        {% for line in debug_info %}
+        {{ line }}<br>
+        {% endfor %}
+        </div>
+        {% endif %} -->
+
+        <div class="stats">
+            <span>کل اعضا:</span> {{ total_members }}
+            <span>•</span>
+            <span> تعداد منوی اول:</span> {{ count_menu1 }}
+            <span>•</span>
+            <span>  تعداد منوی دوم:</span> {{ count_menu2 }}
+            <span>•</span>
+            <span>حضور ندارد:</span> {{ count_absent }}
+        </div>
+
+        <div class="form-section">
+            <h2>ثبت سفارش جدید</h2>
+            <form method="post">
+                {% csrf_token %}
+                <label for="id_member">👤 انتخاب کارمند:</label>
+                {{ form.member }}
+                <label for="id_choice_food">🍽️ انتخاب غذا:</label>
+                {{ form.choice_food }}
+                <button type="submit">ثبت سفارش</button>
+            </form>
+        </div>
+
+        <!-- لیست اعضا -->
+        <div class="list-section">
+            <h2>لیست سفارش‌ها</h2>
+            {% for dept, members in members %}
+                <div class="department">
+                    <h4>{{ dept.location.name|default:"—" }} — {{ dept.name }}</h4>
+                    <ul class="member-list">
+                        {% for member in members %}
+                            <li class="member-card
+    {% if member.today_choice == 1 %}green
+    {% elif member.today_choice == 2 %}yellow
+    {% else %}red{% endif %}">
+    <span>{{ member.name }}</span>
+    <span>
+        {% if member.today_choice == 1 %}
+            {{ menu1_name }}
+        {% elif member.today_choice == 2 %}
+            {{ menu2_name }}
+        {% elif member.today_choice == 0 %}
+            حضور ندارد
+        {% else %}
+            ثبت نشده
+        {% endif %}
+    </span>
+</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

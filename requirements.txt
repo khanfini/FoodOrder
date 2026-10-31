@@ -1,0 +1,18 @@
+asgiref==3.11.0
+Django==5.2.9
+django-widget-tweaks==1.5.0
+et_xmlfile @ file:///D:/PythonProjects/pandas/et_xmlfile-2.0.0-py3-none-any.whl#sha256=7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa
+jalali_core==1.0.0
+jdatetime==5.2.0
+mssql-django==1.6
+numpy==2.3.5
+openpyxl==3.1.5
+pandas @ file:///D:/PythonProjects/pandas/pandas-3.0.2-cp314-cp314-win_amd64.whl#sha256=b35d14bb5d8285d9494fe93815a9e9307c0876e10f1e8e89ac5b88f728ec8dcf
+pyodbc==5.3.0
+python-dateutil @ file:///D:/PythonProjects/pandas/python_dateutil-2.9.0.post0-py2.py3-none-any.whl#sha256=a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
+pytz==2025.2
+six==1.17.0
+sqlparse==0.5.4
+tzdata==2025.3
+waitress @ file:///D:/PythonProjects/pandas/waitress-3.0.2-py3-none-any.whl#sha256=c56d67fd6e87c2ee598b76abdd4e96cfad1f24cacdea5078d382b1f9d7b5ed2e
+whitenoise @ file:///D:/PythonProjects/pandas/whitenoise-6.12.0-py3-none-any.whl#sha256=fc5e8c572e33ebf24795b47b6a7da8da3c00cff2349f5b04c02f28d0cc5a3cc2

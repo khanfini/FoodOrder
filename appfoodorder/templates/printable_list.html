@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لیست سفارش غذا — {{ date_str }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0.8cm;
+        }
+        body {
+            font-family: Vazir, Tahoma, sans-serif;
+            font-size: 9pt;
+            line-height: 1.2;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 4px;
+        }
+        .header h1 {
+            font-size: 14pt;
+            margin: 0;
+            color: #09ad46;
+            font-weight: bold;
+        }
+        .info {
+            font-size: 8pt;
+            margin-top: 4px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .info span {
+            padding: 2px 8px;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .filters {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 15px;
+            font-size: 9pt;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-group label {
+            font-weight: bold;
+            font-size: 8pt;
+            color: #2c3e50;
+        }
+        .filter-group select, .filter-group button {
+            padding: 5px 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: white;
+            font-family: inherit;
+            font-size: 8.5pt;
+            min-width: 130px;
+        }
+        .filter-group button {
+            background-color: #09ad46;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .filter-group button.reset-btn {
+            background-color: #6c757d;
+        }
+        .summary-card {
+            background: #f0f7ff;
+            border: 1px solid #cce5ff;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin: 15px 0 20px 0;
+            font-size: 9pt;
+        }
+        .summary-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 10pt;
+            color: #004085;
+            border-right: 4px solid #09ad46;
+            padding-right: 8px;
+        }
+        .summary-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .summary-item {
+            background: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+        .summary-item .label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .summary-item .count {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 0 4px;
+            color: #09ad46;
+        }
+        .summary-item.menu1 .count { color: #28a745; }
+        .summary-item.menu2 .count { color: #ffc107; }
+        .summary-item.absent .count { color: #dc3545; }
+        .summary-item.total-order .count { color: #17a2b8; }
+        .summary-item.total-all .count { color: #6c757d; }
+        .summary-item .menu-name {
+            font-size: 7pt;
+            color: #6c757d;
+        }
+        @media print {
+            .summary-card {
+                background: #f8f9fa;
+                border: 1px solid #ddd;
+                break-inside: avoid;
+            }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            margin-bottom: 8px;
+        }
+        th, td {
+            padding: 3px 6px;
+            text-align: right;
+            border-bottom: 0.5px solid #dfe6e9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        th {
+            background-color: #f1f2f6;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 1px solid #09ad46;
+        }
+        .status-green { color: #155724; font-weight: bold; }
+        .status-yellow { color: #856404; font-weight: bold; }
+        .status-red { color: #721c25; font-weight: bold; }
+        .footer {
+            text-align: center;
+            font-size: 7.5pt;
+            color: #7f8c8d;
+            margin-top: 6px;
+            border-top: 1px solid #eee;
+            padding-top: 3px;
+        }
+        @media print {
+            .filters {
+                display: none;
+            }
+            body {
+                margin: 0;
+            }
+        }
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+        .excel-btn {
+            background-color: #1f724c !important;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>لیست سفارش غذا</h1>
+    <div class="info">
+        <span>تاریخ: {{ date_str }}</span>
+        <span>روز: {{ weekday_str }}</span>
+        {% if menu1_name %}
+            <span>منوی ۱: {{ menu1_name }}</span>
+        {% endif %}
+        {% if menu2_name %}
+            <span>منوی ۲: {{ menu2_name }}</span>
+        {% endif %}
+        {% if not menu1_name and not menu2_name %}
+            <span>غذایی برای امروز ثبت نشده است</span>
+        {% endif %}
+    </div>
+</div>
+
+<form method="get" class="filters">
+    <div class="filter-group">
+        <label>ساختمان:</label>
+        <select name="location" id="id_location">
+            <option value="">همه ساختمان‌ها</option>
+            {% for loc in all_locations %}
+                <option value="{{ loc.id }}" {% if selected_location_id|add:"0" == loc.id %}selected{% endif %}>
+                    {{ loc.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>دپارتمان:</label>
+        <select name="department" id="id_department">
+            <option value="">همه دپارتمان‌ها</option>
+            {% for dept in all_departments %}
+                <option value="{{ dept.id }}" {% if selected_department_id|add:"0" == dept.id %}selected{% endif %}>
+                    {{ dept.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>طبقه:</label>
+        <select name="floor" id="id_floor">
+            <option value="">همه طبقات</option>
+            {% for fl in all_floors %}
+                <option value="{{ fl.id }}" {% if selected_floor_id|add:"0" == fl.id %}selected{% endif %}>
+                    {{ fl.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>&nbsp;</label>
+        <button type="submit">اعمال فیلتر</button>
+    </div>
+    <div class="filter-group">
+        <label>&nbsp;</label>
+        <button type="button" class="reset-btn" onclick="window.location.href='?';">
+            حذف فیلترها
+        </button>
+    </div>
+    <div class="filter-group">
+        <label>&nbsp;</label>
+        <button type="submit" formaction="{% url 'export_printable_list_excel' %}" class="excel-btn">
+            📎 خروجی اکسل
+        </button>
+    </div>
+</form>
+
+<div class="summary-card">
+    <h3>جمع‌بندی سفارش‌ها (بر اساس فیلترهای انتخاب‌شده)</h3>
+    <div class="summary-items">
+        <div class="summary-item menu1">
+            <span class="label">🍽️ منوی ۱:</span>
+            <span class="count">{{ total_menu1 }}</span>
+            <span class="menu-name">({{ menu1_name|default:"منوی ۱" }})</span>
+        </div>
+        <div class="summary-item menu2">
+            <span class="label">🍽️ منوی ۲:</span>
+            <span class="count">{{ total_menu2 }}</span>
+            <span class="menu-name">({{ menu2_name|default:"منوی ۲" }})</span>
+        </div>
+        <div class="summary-item absent">
+            <span class="label">❌ حضور ندارد:</span>
+            <span class="count">{{ total_absent }}</span>
+        </div>
+        <div class="summary-item total-order">
+            <span class="label">✅ کل سفارش‌های غذا:</span>
+            <span class="count">{{ total_orders }}</span>
+        </div>
+        <div class="summary-item total-all">
+            <span class="label">📋 کل ثبت‌شده‌ها (شامل غایب):</span>
+            <span class="count">{{ total_members_with_choice }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- جدول گزارش با ستون کد پرسنلی -->
+<table>
+    <thead>
+        <tr>
+            <th style="width: 12%;">ساختمان</th>
+            <th style="width: 15%;">دپارتمان</th>
+            <th style="width: 25%;">نام عضو</th>
+            <th style="width: 15%;">کد پرسنلی</th>   <!-- ستون جدید -->
+            <th style="width: 33%;">وضعیت</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in members_data %}
+            {% if item.members %}
+                <tr style="background-color: #e8f5e9; font-weight: bold;">
+                    <td colspan="5">{{ item.location }} — {{ item.department }}</td> <!-- colspan=5 -->
+                </tr>
+                {% for member in item.members %}
+                <tr>
+                    <td></td>   <!-- خالی برای ساختمان -->
+                    <td></td>   <!-- خالی برای دپارتمان -->
+                    <td>{{ member.name }}</td>
+                    <td>
+                        {% if member.code %}
+                            {{ member.code }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if member.choice_food == 1 %}
+                            <span class="status-green">{{ menu1_name|default:"منوی ۱" }}</span>
+                        {% elif member.choice_food == 2 %}
+                            <span class="status-yellow">{{ menu2_name|default:"منوی ۲" }}</span>
+                        {% else %}
+                            <span class="status-red">حضور ندارد</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr style="background-color: #e8f5e9; font-weight: bold;">
+                    <td colspan="5">{{ item.location }} — {{ item.department }}</td>
+                </tr>
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #999;">هیچ عضوی ثبت نشده</td>
+                </tr>
+            {% endif %}
+        {% empty %}
+            <tr>
+                <td colspan="5" class="no-data">هیچ سفارشی برای امروز با فیلترهای انتخاب‌شده یافت نشد.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="footer">این لیست توسط سامانه سفارش غذا تهیه شده است — تاریخ چاپ: {{ date_str }}</div>
+
+</body>
+</html>
