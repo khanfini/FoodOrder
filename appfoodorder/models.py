@@ -52,9 +52,23 @@ class Order(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     date = models.DateField()      # تاریخ سفارش (مثلاً 1405/02/07)
     choice_food = models.IntegerField(choices=CHOICES, default=0)
+    menu_locked = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('member', 'date')   # هر عضو فقط یک سفارش برای هر روز
 
     def __str__(self):
         return f"{self.member.name} - {self.date} - {self.get_choice_food_display()}"
+
+
+class OrderSettings(models.Model):
+    lock_menu_after_order = models.BooleanField(default=True)
+    show_selection_warning = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "تنظیمات سفارش غذا"
+
+
+def get_order_settings():
+    settings_obj, _ = OrderSettings.objects.get_or_create(pk=1)
+    return settings_obj

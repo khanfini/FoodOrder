@@ -1,7 +1,8 @@
 import jdatetime
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from .models import Department, Member, CustomUser, Location , Order,Floor
+from .models import Department, Member, CustomUser, Location , Order, Floor, get_order_settings
 from django import forms
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
@@ -606,12 +607,31 @@ def get_dates_until_month_end(start_date=None):
 
 
 
+def to_gregorian_date(jalali_date):
+    if hasattr(jalali_date, 'togregorian'):
+        return jalali_date.togregorian()
+    if hasattr(jalali_date, 'to_gregorian'):
+        return jalali_date.to_gregorian()
+    return jalali_date.todate()
+
+
+def is_locked_day(order, date, settings_obj):
+    if not settings_obj.lock_menu_after_order:
+        return False
+    if date.weekday() == 5:
+        return False
+    if order is None:
+        return False
+    return order.menu_locked or order.choice_food in (1, 2)
+
+
 def weekly_order(request):
     if not request.user.is_authenticated:
         return redirect("login")
 
     user = request.user
     menu_dict, debug_info = load_menu_dict()
+    settings_obj = get_order_settings()
 
     # دریافت تاریخ‌ها از امروز تا پایان ماه جاری
     date_list = get_dates_until_month_end()
@@ -653,49 +673,51 @@ def weekly_order(request):
             except Member.DoesNotExist:
                 pass
 
+    # دریافت سفارشات قبلی
+    existing_orders = {}
+    if selected_member:
+        gregorian_dates = [to_gregorian_date(d) for d in date_list]
+        orders = Order.objects.filter(member=selected_member, date__in=gregorian_dates)
+        for o in orders:
+            jd = jdatetime.date.fromgregorian(date=o.date)
+            existing_orders[jd] = o
+
     # پردازش POST ثبت سفارش
     if request.method == 'POST' and selected_member:
         for day_info in week_data:
             date_obj = day_info['date']
             choice_key = f'choice_{date_obj.strftime("%Y%m%d")}'
             choice_value = request.POST.get(choice_key)
-            if choice_value is not None and choice_value.isdigit():
-                choice_int = int(choice_value)
-                # تبدیل به میلادی
-                if hasattr(date_obj, 'togregorian'):
-                    greg_date = date_obj.togregorian()
-                elif hasattr(date_obj, 'to_gregorian'):
-                    greg_date = date_obj.to_gregorian()
-                else:
-                    greg_date = date_obj.todate()
-                Order.objects.update_or_create(
-                    member=selected_member,
-                    date=greg_date,
-                    defaults={'choice_food': choice_int}
-                )
-        return redirect('weekly_order')
-
-    # دریافت سفارشات قبلی
-    existing_orders = {}
-    if selected_member:
-        gregorian_dates = []
-        for d in date_list:
-            if hasattr(d, 'togregorian'):
-                gregorian_dates.append(d.togregorian())
-            elif hasattr(d, 'to_gregorian'):
-                gregorian_dates.append(d.to_gregorian())
-            else:
-                gregorian_dates.append(d.todate())
-        orders = Order.objects.filter(member=selected_member, date__in=gregorian_dates)
-        for o in orders:
-            jd = jdatetime.date.fromgregorian(date=o.date)
-            existing_orders[jd] = o.choice_food
+            if choice_value is None or not choice_value.isdigit():
+                continue
+            choice_int = int(choice_value)
+            existing_order = existing_orders.get(date_obj)
+            locked = is_locked_day(existing_order, date_obj, settings_obj)
+            if locked and choice_int != 0:
+                continue
+            greg_date = to_gregorian_date(date_obj)
+            Order.objects.update_or_create(
+                member=selected_member,
+                date=greg_date,
+                defaults={
+                    'choice_food': choice_int,
+                    'menu_locked': locked or choice_int in (1, 2),
+                }
+            )
+        params = []
+        if selected_dept_id:
+            params.append(f'department_id={selected_dept_id}')
+        params.append(f'member_id={selected_member.id}')
+        return redirect(reverse('weekly_order') + '?' + '&'.join(params))
 
     # اضافه کردن existing_choice و date_str و date_display به week_data
     for day in week_data:
-        day['existing_choice'] = existing_orders.get(day['date'], None)
+        existing_order = existing_orders.get(day['date'])
+        existing_choice = existing_order.choice_food if existing_order else None
+        day['existing_choice'] = existing_choice
         day['date_str'] = day['date'].strftime("%Y%m%d")
         day['date_display'] = day['date'].strftime("%Y/%m/%d")
+        day['is_locked'] = is_locked_day(existing_order, day['date'], settings_obj)
 
     # لیست اعضا (با توجه به دپارتمان انتخاب‌شده برای ادمین)
     if user.is_superuser:
@@ -720,6 +742,7 @@ def weekly_order(request):
         'is_admin': user.is_superuser,
         'departments': departments,
         'selected_dept_id': selected_dept_id,
+        'show_selection_warning': settings_obj.show_selection_warning,
     }
     return render(request, 'weekly_order.html', context)
 

@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 
-from .models import Department, Member, CustomUser, Location, Floor
+from .models import Department, Member, CustomUser, Location, Floor, OrderSettings
 
 # ------------------------------------------------------------
 # CustomUser Admin
@@ -80,6 +80,23 @@ class LocationAdmin(admin.ModelAdmin):
 class FloorAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+
+@admin.register(OrderSettings)
+class OrderSettingsAdmin(admin.ModelAdmin):
+    list_display = ('label', 'lock_menu_after_order', 'show_selection_warning')
+    list_display_links = ('label',)
+
+    def label(self, obj):
+        return "تنظیمات سفارش غذا (برای ویرایش کلیک کنید)"
+
+    label.short_description = "تنظیمات"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 # from django.contrib import admin
