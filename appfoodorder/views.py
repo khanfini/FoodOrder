@@ -575,24 +575,26 @@ def get_week_dates(target_date=None):
 
 
 
-def get_dates_until_month_end(start_date=None):
-    """بازگرداندن لیست تاریخ‌ها از start_date تا آخر ماه جاری، به جز جمعه‌ها"""
-    if start_date is None:
-        start_date = jdatetime.date.today()
+def get_month_end_date(start_date):
     year = start_date.year
     month = start_date.month
-    # تعداد روزهای ماه جاری (شمسی)
     if month in [1, 2, 3, 4, 5, 6]:
         month_days = 31
     elif month in [7, 8, 9, 10, 11]:
         month_days = 30
-    else:  # month == 12
+    else:
         if (year % 33 in [1, 5, 9, 13, 17, 22, 26, 30]) or (year % 4 == 0 and year % 100 != 0):
             month_days = 30
         else:
             month_days = 29
+    return jdatetime.date(year, month, month_days)
 
-    end_date = jdatetime.date(year, month, month_days)
+
+def get_dates_until_month_end(start_date=None):
+    """بازگرداندن لیست تاریخ‌ها از start_date تا آخر ماه جاری، به جز جمعه‌ها"""
+    if start_date is None:
+        start_date = jdatetime.date.today()
+    end_date = get_month_end_date(start_date)
     date_list = []
     current = start_date
     while current <= end_date:
@@ -601,6 +603,21 @@ def get_dates_until_month_end(start_date=None):
             date_list.append(current)
         current += timedelta(days=1)
     return date_list
+
+
+def get_next_month_menu_dates(menu_dict, start_date=None):
+    if start_date is None:
+        start_date = jdatetime.date.today()
+    if start_date != get_month_end_date(start_date):
+        return []
+    if start_date.month == 12:
+        next_year, next_month = start_date.year + 1, 1
+    else:
+        next_year, next_month = start_date.year, start_date.month + 1
+    return sorted(
+        date for date in menu_dict
+        if date.year == next_year and date.month == next_month and date.weekday() != 6
+    )
 
 
 
@@ -634,7 +651,9 @@ def weekly_order(request):
     settings_obj = get_order_settings()
 
     # دریافت تاریخ‌ها از امروز تا پایان ماه جاری
-    date_list = get_dates_until_month_end()
+    today = jdatetime.date.today()
+    date_list = get_dates_until_month_end(today)
+    date_list.extend(get_next_month_menu_dates(menu_dict, today))
     week_data = []
     for d in date_list:
         menu1, menu2 = menu_dict.get(d, ("ثبت نشده", "ثبت نشده"))
