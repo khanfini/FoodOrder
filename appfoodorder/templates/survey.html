@@ -241,6 +241,10 @@
             background: #f1f5f9;
         }
         .rating-label:active { transform: scale(0.97); }
+        .rating-group input[type="radio"]:disabled + .rating-label {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
 
         .rating-label .rating-icon { font-size: 1.5rem; line-height: 1; }
         .rating-label .rating-name {
@@ -521,7 +525,7 @@
             <span class="campaign-badge">{{ campaign.catering.name }} - هفته {{ campaign.week_number }}</span>
         </div>
         <div class="campaign-details">
-            <span>📅 {{ campaign.start_date|date:"Y/m/d" }} تا {{ campaign.end_date|date:"Y/m/d" }}</span>
+            <span>📅 {{ campaign_start_display }} تا {{ campaign_end_display }}</span>
             <span>🏢 کترینگ: {{ campaign.catering.name }}</span>
         </div>
     </div>
@@ -532,7 +536,7 @@
     <div class="section">
         <div class="section-title">
             <span class="section-title-icon">📅</span>
-            هفته جاری - نظرسنجی غذای خورده شده
+            هفته جاری - نظرسنجی هر غذای انتخاب‌شده
         </div>
 
         <form method="post">
@@ -543,11 +547,14 @@
                 <div class="day-card {% if item.date.weekday == 5 %}thursday{% endif %}">
                     <div class="card-header">
                         <span class="day-name">{{ item.weekday }}</span>
-                        <span class="day-date">{{ item.date_display }}</span>
+                        <span>
+                            {% if item.is_completed %}<span class="lock-badge">ثبت شده</span>{% endif %}
+                            <span class="day-date">{{ item.date_display }}</span>
+                        </span>
                     </div>
                     <div class="card-body">
                         <div class="menu-info">
-                            <div class="menu-info-label">منوی انتخابی شما</div>
+                            <div class="menu-info-label">غذای مورد نظرسنجی</div>
                             <div class="menu-info-name">{{ item.menu_name }}</div>
                         </div>
                         <div class="menu-info">
@@ -561,7 +568,7 @@
                                    id="good_{{ item.date_str }}"
                                    value="good"
                                    {% if item.existing_rating == 'good' %}checked{% endif %}
-                                   required>
+                                   {% if item.is_completed %}disabled{% endif %}>
                             <label class="rating-label" for="good_{{ item.date_str }}">
                                 <span class="rating-icon">👍</span>
                                 <span class="rating-name">خوب</span>
@@ -571,7 +578,8 @@
                                    name="rating_{{ item.date_str }}"
                                    id="avg_{{ item.date_str }}"
                                    value="average"
-                                   {% if item.existing_rating == 'average' %}checked{% endif %}>
+                                   {% if item.existing_rating == 'average' %}checked{% endif %}
+                                   {% if item.is_completed %}disabled{% endif %}>
                             <label class="rating-label" for="avg_{{ item.date_str }}">
                                 <span class="rating-icon">😐</span>
                                 <span class="rating-name">متوسط</span>
@@ -581,7 +589,8 @@
                                    name="rating_{{ item.date_str }}"
                                    id="bad_{{ item.date_str }}"
                                    value="bad"
-                                   {% if item.existing_rating == 'bad' %}checked{% endif %}>
+                                   {% if item.existing_rating == 'bad' %}checked{% endif %}
+                                   {% if item.is_completed %}disabled{% endif %}>
                             <label class="rating-label" for="bad_{{ item.date_str }}">
                                 <span class="rating-icon">👎</span>
                                 <span class="rating-name">ضعیف</span>
@@ -593,7 +602,7 @@
             </div>
 
             <div class="submit-area">
-                <span class="submit-info">✏️ امتیازدهی برای <strong>{{ survey_data|length }}</strong> روز</span>
+                <span class="submit-info">✏️ امتیازدهی جداگانه برای <strong>{{ survey_data|length }}</strong> غذا</span>
                 <button type="submit" class="btn-submit">
                     ✅ ثبت نظرسنجی و رفتن به سفارش هفته بعد
                 </button>
@@ -602,7 +611,7 @@
 
     {% else %}
     <div class="completion-message">
-        ✅ نظرسنجی هفته قبل کامل است. می‌توانید سفارش هفته بعد را ثبت کنید.
+        ✅ نظرسنجی همه روزهای در دسترس ثبت شده است. می‌توانید سفارش هفته بعد را ثبت کنید.
     </div>
     {% endif %}
 
@@ -633,7 +642,6 @@
                         </span>
                     </div>
                     <div class="card-body">
-                        {% if day.weekday_num != 5 %}
                         <div class="order-choices has-two">
                             <input type="radio" class="order-choice-menu1"
                                    name="choice_{{ day.date_str }}"
@@ -671,31 +679,6 @@
                                 </label>
                             </div>
                         </div>
-                        {% else %}
-                        <div class="order-choices has-two">
-                            <input type="radio" class="order-choice-menu1"
-                                   name="choice_{{ day.date_str }}"
-                                   id="om1_{{ day.date_str }}"
-                                   value="1"
-                                   {% if day.existing_choice == 1 %}checked{% endif %}
-                                   {% if day.is_locked %}disabled{% endif %}>
-                            <label class="order-choice-label" for="om1_{{ day.date_str }}">
-                                <span class="choice-icon">🥘</span>
-                                <span class="choice-name">{{ day.menu1 }}</span>
-                                <span class="choice-badge" style="background:#dcfce7;color:#166534;">منوی ۱</span>
-                            </label>
-
-                            <input type="radio" class="order-choice-absent"
-                                   name="choice_{{ day.date_str }}"
-                                   id="oabs_{{ day.date_str }}"
-                                   value="0"
-                                   {% if day.existing_choice == 0 %}checked{% endif %}>
-                            <label class="order-choice-label" for="oabs_{{ day.date_str }}">
-                                <span class="choice-icon">❌</span>
-                                <span class="choice-name">حضور ندارم</span>
-                            </label>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}

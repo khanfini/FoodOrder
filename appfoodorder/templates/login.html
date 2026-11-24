@@ -178,7 +178,160 @@
             font-style: italic;
         }
 
+        /* ── بنر کمپین نظرسنجی ───────────────────── */
+        body { gap: 48px; }
+
+        .promo {
+            flex: 1;
+            max-width: 560px;
+            color: #F3F6F9;
+            background: rgba(31, 52, 74, 0.88);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 30px 32px 28px;
+            box-shadow: 0 20px 45px rgba(15, 30, 45, 0.35);
+            box-sizing: border-box;
+        }
+        .promo-kicker {
+            display: inline-block;
+            font-size: 13px;
+            color: #1F344A;
+            background: #F2C14E;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-weight: 700;
+        }
+        .promo h1 {
+            margin: 14px 0 10px;
+            font-size: 30px;
+            line-height: 1.45;
+            font-weight: 800;
+        }
+        .promo p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 2;
+            color: #C9D6E2;
+            max-width: 46ch;
+        }
+        .promo-scene {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin: 18px 0 8px;
+        }
+
+        /* صحنه: بخار، لمس گزینه «خوب» و مهر «ثبت شد» در یک حلقه ۸ ثانیه‌ای */
+        .steam {
+            fill: none;
+            stroke: #C9D6E2;
+            stroke-width: 4;
+            stroke-linecap: round;
+            opacity: 0;
+            animation: steam 3s ease-in-out infinite;
+        }
+        .steam.s2 { animation-delay: 0.8s; }
+        .steam.s3 { animation-delay: 1.6s; }
+        @keyframes steam {
+            0%   { opacity: 0; transform: translateY(10px); }
+            40%  { opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(-22px); }
+        }
+
+        .chip rect { fill: #2B4560; stroke: #49688A; stroke-width: 2; }
+        .chip text { fill: #C9D6E2; font-size: 15px; font-weight: 700; }
+        .chip-good rect { animation: chipFill 8s ease-in-out infinite; }
+        .chip-good text { animation: chipText 8s ease-in-out infinite; }
+        @keyframes chipFill {
+            0%, 34%  { fill: #2B4560; stroke: #49688A; }
+            38%, 88% { fill: #5FB87A; stroke: #8FD8A5; }
+            95%,100% { fill: #2B4560; stroke: #49688A; }
+        }
+        @keyframes chipText {
+            0%, 34%  { fill: #C9D6E2; }
+            38%, 88% { fill: #10301C; }
+            95%,100% { fill: #C9D6E2; }
+        }
+
+        .tap {
+            fill: none;
+            stroke: #F2C14E;
+            stroke-width: 3;
+            opacity: 0;
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: tap 8s ease-out infinite;
+        }
+        @keyframes tap {
+            0%, 30% { opacity: 0; transform: scale(0.3); }
+            34%     { opacity: 1; transform: scale(0.6); }
+            44%     { opacity: 0; transform: scale(1.6); }
+            100%    { opacity: 0; }
+        }
+
+        .stamp {
+            opacity: 0;
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: stamp 8s cubic-bezier(.2,.9,.3,1.3) infinite;
+        }
+        .stamp circle { fill: none; stroke: #F2C14E; stroke-width: 4; }
+        .stamp text { fill: #F2C14E; font-size: 17px; font-weight: 800; }
+        @keyframes stamp {
+            0%, 42%  { opacity: 0; transform: rotate(-14deg) scale(1.9); }
+            48%      { opacity: 1; transform: rotate(-14deg) scale(0.94); }
+            52%, 86% { opacity: 1; transform: rotate(-14deg) scale(1); }
+            94%,100% { opacity: 0; transform: rotate(-14deg) scale(1); }
+        }
+
+        .weeks {
+            display: flex;
+            gap: 10px;
+            margin: 6px 0 18px;
+            padding: 0;
+            list-style: none;
+        }
+        .weeks li {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            padding: 8px 4px;
+            border-radius: 10px;
+            border: 1.5px dashed #49688A;
+            color: #8FA6BC;
+        }
+        .weeks li.done { border-style: solid; border-color: #5FB87A; color: #8FD8A5; }
+        .weeks li.current {
+            border-style: solid;
+            border-color: #F2C14E;
+            background: rgba(242, 193, 78, 0.12);
+            color: #F2C14E;
+            font-weight: 700;
+        }
+        .promo-cta {
+            font-size: 14px;
+            color: #F3F6F9;
+            border-right: 3px solid #F2C14E;
+            padding-right: 12px;
+            line-height: 1.9;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .promo * { animation: none !important; }
+            .stamp { opacity: 1; transform: rotate(-14deg); }
+            .chip-good rect { fill: #5FB87A; stroke: #8FD8A5; }
+            .chip-good text { fill: #10301C; }
+            .steam { opacity: 0.6; }
+        }
+
         /* واکنش‌گرایی برای موبایل و تبلت */
+        @media (max-width: 1000px) {
+            body { flex-direction: column; justify-content: center; }
+            .promo { max-width: 380px; width: 100%; padding: 24px 22px; }
+            .promo h1 { font-size: 23px; }
+        }
+
         @media (max-width: 768px) {
             body {
                 justify-content: center;
@@ -237,5 +390,66 @@
             <button type="submit">ورود به سامانه</button>
         </form>
     </div>
+
+    {% if promo %}
+    <aside class="promo" aria-label="کمپین نظرسنجی غذا">
+        <span class="promo-kicker">کمپین نظرسنجی غذا · هفته {{ promo.week }}</span>
+        <h1>این ماه، داور ناهار شما هستید</h1>
+        <p>
+            چهار هفته، چهار کترینگ. هر روز بعد از ناهار با یک لمس بگویید غذا
+            خوب بود، متوسط یا ضعیف. رأی شما تعیین می‌کند کدام کترینگ سر سفره‌مان می‌ماند.
+        </p>
+
+        <svg class="promo-scene" viewBox="0 0 400 250" role="img"
+             aria-label="بشقاب غذا، انتخاب گزینه خوب و ثبت نظر">
+            <!-- بخار -->
+            <path class="steam"    d="M170 70 q-10 -14 0 -28 q10 -14 0 -28"/>
+            <path class="steam s2" d="M200 66 q-10 -14 0 -28 q10 -14 0 -28"/>
+            <path class="steam s3" d="M230 70 q-10 -14 0 -28 q10 -14 0 -28"/>
+
+            <!-- بشقاب و غذا -->
+            <ellipse cx="200" cy="128" rx="104" ry="40" fill="#F3F6F9"/>
+            <ellipse cx="200" cy="124" rx="80"  ry="28" fill="none" stroke="#D1DCE5" stroke-width="3"/>
+            <ellipse cx="176" cy="116" rx="44"  ry="18" fill="#F8EBC8"/>
+            <rect x="200" y="104" width="62" height="12" rx="6" fill="#B5643C"/>
+            <rect x="204" y="120" width="58" height="12" rx="6" fill="#A05530"/>
+            <circle cx="166" cy="108" r="4" fill="#E2A33B"/>
+            <circle cx="184" cy="112" r="4" fill="#E2A33B"/>
+            <circle cx="232" cy="96"  r="6" fill="#D9534F"/>
+
+            <!-- مهر ثبت -->
+            <g class="stamp">
+                <circle cx="318" cy="70" r="40"/>
+                <text x="318" y="76" text-anchor="middle">ثبت شد</text>
+            </g>
+
+            <!-- گزینه‌های امتیاز -->
+            <g class="chip chip-good">
+                <rect x="262" y="190" width="104" height="40" rx="20"/>
+                <text x="314" y="216" text-anchor="middle">خوب</text>
+            </g>
+            <g class="chip">
+                <rect x="148" y="190" width="104" height="40" rx="20"/>
+                <text x="200" y="216" text-anchor="middle">متوسط</text>
+            </g>
+            <g class="chip">
+                <rect x="34" y="190" width="104" height="40" rx="20"/>
+                <text x="86" y="216" text-anchor="middle">ضعیف</text>
+            </g>
+            <circle class="tap" cx="314" cy="210" r="26"/>
+        </svg>
+
+        <ul class="weeks" aria-label="مراحل کمپین">
+            {% for w in promo.weeks %}
+            <li class="{{ w.state }}">هفته {{ w.label }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="promo-cta">
+            الان نوبت <strong>{{ promo.catering }}</strong> است.
+            وارد شوید و نظر امروزتان را ثبت کنید.
+        </div>
+    </aside>
+    {% endif %}
 </body>
 </html>

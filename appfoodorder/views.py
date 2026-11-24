@@ -98,8 +98,7 @@ def load_weekly_menu_dict(week_number=None, year_month=None):
 
     if not files:
         debug_info.append(f"❌ فایل برای {year_month} هفته {week_number} یافت نشد")
-        # فallback به فایل پیش‌فرض
-        return load_menu_dict()
+        return {}, debug_info, year_month, week_number
 
     excel_path = files[0]
     debug_info.append(f"✅ فایل یافت شد: {excel_path}")
@@ -142,53 +141,45 @@ def get_active_campaign():
     return campaign
 
 
-# ✅ تابع جدید: بررسی تکمیل نظرسنجی هفته قبل
+# سفارش‌ها و وضعیت نظرسنجی هفته جاری
+def get_survey_orders(member, campaign):
+    """غذاهای سفارش‌داده‌شده از ابتدای هفته جاری تا امروز."""
+    today = jdatetime.date.today()
+    menu_dates = [date for date in get_campaign_menu_dict(campaign) if date <= today]
+    return Order.objects.filter(
+        member=member,
+        date__in=[date.togregorian() for date in menu_dates],
+    ).exclude(choice_food=0).order_by('date')
+
+
 def check_survey_completed(member, campaign):
-    """بررسی اینکه آیا کاربر نظرسنجی هفته قبل را تکمیل کرده"""
-    if not campaign or campaign.week_number == 1:
-        return True  # هفته اول نیاز به نظرسنجی قبلی ندارد
-
-    prev_week = campaign.week_number - 1
-    prev_campaign = Campaign.objects.filter(
-        catering=campaign.catering,
-        week_number=prev_week,
-        is_active=True
-    ).first()
-
-    if not prev_campaign:
+    """همه غذاهای قابل‌نظرسنجی تا امروز امتیاز گرفته‌اند."""
+    if not campaign:
         return True
 
-    # بررسی وجود نظرسنجی برای تمام روزهای هفته قبل که کاربر غذا خورده
-    prev_week_dates = get_week_dates_for_campaign(prev_campaign)
-    member_orders = Order.objects.filter(
-        member=member,
-        date__in=[d.togregorian() for d in prev_week_dates]
-    ).exclude(choice_food=0)
-
+    member_orders = get_survey_orders(member, campaign)
     if not member_orders.exists():
-        return True  # کاربر هفته قبل غذا نخورده
+        return True
 
-    # بررسی تکمیل نظرسنجی برای تمام سفارشات
-    survey_count = Survey.objects.filter(
+    return Survey.objects.filter(
         member=member,
-        campaign=prev_campaign,
-        date__in=[o.date for o in member_orders]
-    ).count()
+        campaign=campaign,
+        date__in=[order.date for order in member_orders],
+    ).count() >= member_orders.count()
 
-    return survey_count >= member_orders.count()
+
+def get_next_campaign(campaign):
+    """کمپین بعدی می‌تواند متعلق به کترینگ متفاوتی باشد."""
+    return Campaign.objects.filter(
+        is_active=True,
+        start_date__gt=campaign.start_date,
+    ).select_related('catering').order_by('start_date').first()
 
 
 # ✅ تابع جدید: دریافت تاریخ‌های هفته برای کمپین
 def get_week_dates_for_campaign(campaign):
-    """دریافت تاریخ‌های شنبه تا پنجشنبه برای هفته کمپین"""
-    start_date = jdatetime.date.fromgregorian(date=campaign.start_date)
-    week_dates = []
-    current = start_date
-    for i in range(6):  # شنبه تا پنجشنبه
-        if current.weekday() != 6:  # نه جمعه
-            week_dates.append(current)
-        current += timedelta(days=1)
-    return week_dates
+    """دریافت تمام تاریخ‌های واقعی موجود در فایل منوی کمپین."""
+    return sorted(get_campaign_menu_dict(campaign))
 
 
 # ✅ تابع جدید: دریافت منو برای هفته کمپین
@@ -201,9 +192,35 @@ def get_campaign_menu_dict(campaign):
     return menu_dict
 
 
+def to_persian_digits(value):
+    return str(value).translate(str.maketrans('0123456789', '۰۱۲۳۴۵۶۷۸۹'))
+
+
+def get_campaign_promo():
+    """اطلاعات بنر تبلیغاتی کمپین نظرسنجی برای صفحه ورود."""
+    campaign = get_active_campaign()
+    if not campaign:
+        return None
+    weeks = []
+    for number in range(1, 5):
+        if number < campaign.week_number:
+            state = 'done'
+        elif number == campaign.week_number:
+            state = 'current'
+        else:
+            state = 'upcoming'
+        weeks.append({'label': to_persian_digits(number), 'state': state})
+    return {
+        'catering': campaign.catering.name,
+        'week': to_persian_digits(campaign.week_number),
+        'weeks': weeks,
+    }
+
+
 @ensure_csrf_cookie
 def login(request):
     menu_today, debug_info = get_menu_for_today()
+    promo = get_campaign_promo()
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -224,8 +241,8 @@ def login(request):
 
             return redirect("weekly_order")
         else:
-            return render(request, "login.html", {"error": "نام کاربری یا رمز عبور اشتباه است", "menu_today": menu_today})
-    return render(request, "login.html", {"menu_today": menu_today})
+            return render(request, "login.html", {"error": "نام کاربری یا رمز عبور اشتباه است", "menu_today": menu_today, "promo": promo})
+    return render(request, "login.html", {"menu_today": menu_today, "promo": promo})
 
 
 def logout_view(request):
@@ -259,7 +276,7 @@ def survey(request):
     if not campaign:
         return redirect("weekly_order")
 
-    # بررسی آیا نظرسنجی هفته قبل تکمیل شده
+    # بررسی تکمیل نظرسنجی غذاهای سفارش‌داده‌شده هفته جاری
     if check_survey_completed(member, campaign):
         return redirect("weekly_order")
 
@@ -267,13 +284,8 @@ def survey(request):
     current_menu_dict = get_campaign_menu_dict(campaign)
     current_week_dates = get_week_dates_for_campaign(campaign)
 
-    # دریافت منو هفته بعد (برای سفارش)
-    next_week_number = campaign.week_number + 1 if campaign.week_number < 4 else 1
-    next_campaign = Campaign.objects.filter(
-        catering=campaign.catering,
-        week_number=next_week_number,
-        is_active=True
-    ).first()
+    # دریافت کمپین بعدی؛ کترینگ هر هفته متفاوت است.
+    next_campaign = get_next_campaign(campaign)
 
     next_menu_dict = {}
     next_week_dates = []
@@ -281,9 +293,8 @@ def survey(request):
         next_menu_dict = get_campaign_menu_dict(next_campaign)
         next_week_dates = get_week_dates_for_campaign(next_campaign)
 
-    # دریافت سفارشات کاربر برای هفته جاری
-    gregorian_dates = [d.togregorian() for d in current_week_dates]
-    member_orders = Order.objects.filter(member=member, date__in=gregorian_dates).exclude(choice_food=0)
+    # هر غذای سفارش‌داده‌شده در هفته جاری یک نظرسنجی مستقل دارد.
+    member_orders = get_survey_orders(member, campaign)
 
     # بررسی نظرسنجی‌های قبلی
     existing_surveys = Survey.objects.filter(
@@ -295,26 +306,28 @@ def survey(request):
 
     # پردازش POST ثبت نظرسنجی
     if request.method == 'POST':
-        all_rated = True
+        saved = False
         for order in member_orders:
-            rating_key = f'rating_{order.date.strftime("%Y%m%d")}'
-            rating_value = request.POST.get(rating_key)
-            if not rating_value:
-                all_rated = False
+            if order.date in survey_dict:
                 continue
 
-            # ذخیره یا آپدیت نظرسنجی
-            Survey.objects.update_or_create(
+            # نام فیلد در قالب با تاریخ شمسی ساخته می‌شود (مثل rating_14050902)
+            jalali_date = jdatetime.date.fromgregorian(date=order.date)
+            rating_key = f'rating_{jalali_date.strftime("%Y%m%d")}'
+            rating_value = request.POST.get(rating_key)
+            if rating_value not in dict(Survey.RATING_CHOICES):
+                continue
+
+            Survey.objects.create(
                 member=member,
                 campaign=campaign,
                 date=order.date,
-                defaults={
-                    'menu_choice': order.choice_food,
-                    'rating': rating_value,
-                }
+                menu_choice=order.choice_food,
+                rating=rating_value,
             )
+            saved = True
 
-        if all_rated and member_orders.exists():
+        if saved:
             # هدایت به صفحه سفارش با حفظ پارامترها برای ادمین
             if user.is_superuser:
                 params = []
@@ -341,6 +354,7 @@ def survey(request):
             'menu_choice': order.get_choice_food_display(),
             'menu_name': menu_name,
             'existing_rating': existing_survey.rating if existing_survey else None,
+            'is_completed': existing_survey is not None,
         })
 
     # آماده‌سازی داده‌های هفته بعد برای سفارش
@@ -357,6 +371,7 @@ def survey(request):
             next_week_data.append({
                 'date': d,
                 'weekday': get_weekday_name(d.weekday()),
+                'weekday_num': d.weekday(),
                 'date_display': d.strftime("%Y/%m/%d"),
                 'date_str': d.strftime("%Y%m%d"),
                 'menu1': menu1 if menu1 else "—",
@@ -366,6 +381,8 @@ def survey(request):
 
     context = {
         'campaign': campaign,
+        'campaign_start_display': jdatetime.date.fromgregorian(date=campaign.start_date).strftime("%Y/%m/%d"),
+        'campaign_end_display': jdatetime.date.fromgregorian(date=campaign.end_date).strftime("%Y/%m/%d"),
         'survey_data': survey_data,
         'next_week_data': next_week_data,
         'next_campaign': next_campaign,
@@ -985,7 +1002,7 @@ def weekly_order(request):
                 'all_members': all_members,
                 'selected_dept_id': selected_dept_id,
                 'selected_member': None,
-                'today': jdatetime.date.today(),
+                'today_display': jdatetime.date.today().strftime("%Y/%m/%d"),
             }
             return render(request, 'weekly_order.html', context)
         else:
@@ -1013,13 +1030,8 @@ def weekly_order(request):
     current_menu_dict = get_campaign_menu_dict(campaign)
     current_week_dates = get_week_dates_for_campaign(campaign)
 
-    # دریافت منو هفته بعد
-    next_week_number = campaign.week_number + 1 if campaign.week_number < 4 else 1
-    next_campaign = Campaign.objects.filter(
-        catering=campaign.catering,
-        week_number=next_week_number,
-        is_active=True
-    ).first()
+    # کمپین هفته بعد می‌تواند کترینگ متفاوتی داشته باشد.
+    next_campaign = get_next_campaign(campaign)
 
     next_menu_dict = {}
     next_week_dates = []
@@ -1029,9 +1041,8 @@ def weekly_order(request):
 
     # هفته جاری - برای نظرسنجی (تنها اگر نظرسنجی تکمیل نشده)
     survey_data = []
-    if not survey_completed:
-        gregorian_dates = [d.togregorian() for d in current_week_dates]
-        member_orders = Order.objects.filter(member=selected_member, date__in=gregorian_dates).exclude(choice_food=0)
+    if campaign:  # کارت‌های ثبت‌شده هم (به‌صورت قفل) نمایش داده می‌شوند
+        member_orders = get_survey_orders(selected_member, campaign)
 
         existing_surveys = Survey.objects.filter(
             member=selected_member,
@@ -1054,6 +1065,7 @@ def weekly_order(request):
                 'menu_choice': order.get_choice_food_display(),
                 'menu_name': menu_name,
                 'existing_rating': existing_survey.rating if existing_survey else None,
+                'is_completed': existing_survey is not None,
             })
 
     # هفته بعد - برای سفارش
@@ -1071,6 +1083,7 @@ def weekly_order(request):
             next_week_data.append({
                 'date': d,
                 'weekday': get_weekday_name(d.weekday()),
+                'weekday_num': d.weekday(),
                 'date_display': d.strftime("%Y/%m/%d"),
                 'date_str': d.strftime("%Y%m%d"),
                 'menu1': menu1 if menu1 else "—",
@@ -1115,6 +1128,9 @@ def weekly_order(request):
         'selected_dept_id': selected_dept_id,
         'selected_member': selected_member,
         'campaign': campaign,
+        'campaign_start_display': jdatetime.date.fromgregorian(date=campaign.start_date).strftime("%Y/%m/%d"),
+        'campaign_end_display': jdatetime.date.fromgregorian(date=campaign.end_date).strftime("%Y/%m/%d"),
+        'today_display': jdatetime.date.today().strftime("%Y/%m/%d"),
         'survey_data': survey_data,
         'next_week_data': next_week_data,
         'next_campaign': next_campaign,
