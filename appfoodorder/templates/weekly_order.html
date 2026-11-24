@@ -91,7 +91,7 @@
             color: #fff;
         }
 
-        /* ── Campaign Info (for user view) ───────── */
+        /* ── Campaign Info ───────────────────────── */
         .campaign-info {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 16px;
@@ -250,17 +250,121 @@
 
         .card-body { padding: 14px 16px; }
 
-        /* ── Menu Choice Buttons ────────────────── */
-        .menu-choices, .order-choices {
+        /* ── Menu Info (Survey) ──────────────────── */
+        .menu-info {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .menu-info-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .menu-info-name {
+            font-size: 0.85rem;
+            color: #1a3c5e;
+            font-weight: 600;
+        }
+
+        /* ── Rating Buttons (Survey) ─────────────── */
+        .rating-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .rating-group input[type="radio"] { display: none; }
+
+        .rating-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 12px 8px;
+            border-radius: 11px;
+            border: 2px solid #e8edf2;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: border-color 0.18s, background 0.18s, transform 0.1s;
+            text-align: center;
+            min-height: 72px;
+            position: relative;
+        }
+        .rating-label:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+        .rating-label:active { transform: scale(0.97); }
+
+        .rating-label .rating-icon { font-size: 1.5rem; line-height: 1; }
+        .rating-label .rating-name {
+            font-size: 0.75rem;
+            color: #475569;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        input[type="radio"].rating-good:checked + .rating-label {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+        input[type="radio"].rating-good:checked + .rating-label .rating-name { color: #14532d; }
+        input[type="radio"].rating-good:checked + .rating-label::after {
+            content: "✓";
+            position: absolute;
+            top: 5px;
+            left: 7px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        input[type="radio"].rating-average:checked + .rating-label {
+            border-color: #ea580c;
+            background: #fff7ed;
+        }
+        input[type="radio"].rating-average:checked + .rating-label .rating-name { color: #9a3412; }
+        input[type="radio"].rating-average:checked + .rating-label::after {
+            content: "✓";
+            position: absolute;
+            top: 5px;
+            left: 7px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        input[type="radio"].rating-bad:checked + .rating-label {
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+        input[type="radio"].rating-bad:checked + .rating-label .rating-name { color: #991b1b; }
+        input[type="radio"].rating-bad:checked + .rating-label::after {
+            content: "✓";
+            position: absolute;
+            top: 5px;
+            left: 7px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        /* ── Order Choices ───────────────────────── */
+        .order-choices {
             display: grid;
             gap: 8px;
         }
-        .menu-choices.has-two, .order-choices.has-two { grid-template-columns: 1fr 1fr; }
-        .menu-choices.has-three { grid-template-columns: 1fr 1fr; }
+        .order-choices.has-two { grid-template-columns: 1fr 1fr; }
 
-        .menu-choices input[type="radio"], .order-choices input[type="radio"] { display: none; }
+        .order-choices input[type="radio"] { display: none; }
 
-        .choice-label, .order-choice-label {
+        .order-choice-label {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -276,58 +380,31 @@
             min-height: 64px;
             position: relative;
         }
-        .choice-label:hover, .order-choice-label:hover {
+        .order-choice-label:hover {
             border-color: #94a3b8;
             background: #f1f5f9;
         }
-        .choice-label:active, .order-choice-label:active { transform: scale(0.97); }
+        .order-choice-label:active { transform: scale(0.97); }
 
-        .choice-label .choice-icon, .order-choice-label .choice-icon { font-size: 1.3rem; line-height: 1; }
-        .choice-label .choice-name, .order-choice-label .choice-name {
+        .order-choice-label .choice-icon { font-size: 1.3rem; line-height: 1; }
+        .order-choice-label .choice-name {
             font-size: 0.72rem;
             color: #475569;
             font-weight: 600;
             line-height: 1.3;
         }
-        .choice-label .choice-badge, .order-choice-label .choice-badge {
+        .order-choice-label .choice-badge {
             font-size: 0.62rem;
             padding: 1px 6px;
             border-radius: 20px;
             font-weight: 700;
         }
 
-        /* ── Selected States ────────────────────── */
-
-        /* حضور ندارم — قرمز */
-        input[type="radio"].choice-absent:checked + .choice-label,
-        input[type="radio"].order-choice-absent:checked + .order-choice-label {
-            border-color: #dc2626;
-            background: #fef2f2;
-        }
-        input[type="radio"].choice-absent:checked + .choice-label .choice-name,
-        input[type="radio"].order-choice-absent:checked + .order-choice-label .choice-name { color: #991b1b; }
-        input[type="radio"].choice-absent:checked + .choice-label .choice-icon,
-        input[type="radio"].order-choice-absent:checked + .order-choice-label .choice-icon { filter: none; }
-        input[type="radio"].choice-absent:checked + .choice-label::after,
-        input[type="radio"].order-choice-absent:checked + .order-choice-label::after {
-            content: "✓";
-            position: absolute;
-            top: 5px;
-            left: 7px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #dc2626;
-        }
-
-        /* منوی ۱ — سبز */
-        input[type="radio"].choice-menu1:checked + .choice-label,
         input[type="radio"].order-choice-menu1:checked + .order-choice-label {
             border-color: #16a34a;
             background: #f0fdf4;
         }
-        input[type="radio"].choice-menu1:checked + .choice-label .choice-name,
         input[type="radio"].order-choice-menu1:checked + .order-choice-label .choice-name { color: #14532d; }
-        input[type="radio"].choice-menu1:checked + .choice-label::after,
         input[type="radio"].order-choice-menu1:checked + .order-choice-label::after {
             content: "✓";
             position: absolute;
@@ -338,15 +415,11 @@
             color: #16a34a;
         }
 
-        /* منوی ۲ — آبی */
-        input[type="radio"].choice-menu2:checked + .choice-label,
         input[type="radio"].order-choice-menu2:checked + .order-choice-label {
             border-color: #2563eb;
             background: #eff6ff;
         }
-        input[type="radio"].choice-menu2:checked + .choice-label .choice-name,
         input[type="radio"].order-choice-menu2:checked + .order-choice-label .choice-name { color: #1e3a8a; }
-        input[type="radio"].choice-menu2:checked + .choice-label::after,
         input[type="radio"].order-choice-menu2:checked + .order-choice-label::after {
             content: "✓";
             position: absolute;
@@ -357,14 +430,40 @@
             color: #2563eb;
         }
 
-        /* absent spans full width when alone with menu1 */
-        .choice-absent-wrap, .order-choice-absent-wrap { grid-column: 1 / -1; }
-        .choice-absent-wrap .choice-label,
+        input[type="radio"].order-choice-absent:checked + .order-choice-label {
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+        input[type="radio"].order-choice-absent:checked + .order-choice-label .choice-name { color: #991b1b; }
+        input[type="radio"].order-choice-absent:checked + .order-choice-label::after {
+            content: "✓";
+            position: absolute;
+            top: 5px;
+            left: 7px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .order-choice-absent-wrap { grid-column: 1 / -1; }
         .order-choice-absent-wrap .order-choice-label {
             min-height: 44px;
             flex-direction: row;
             gap: 8px;
             justify-content: center;
+        }
+
+        .day-card.locked .order-choice-label {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+
+        .lock-badge {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 20px;
+            padding: 3px 9px;
+            font-size: 0.7rem;
         }
 
         /* ── Submit Area ────────────────────────── */
@@ -545,13 +644,6 @@
             border-color: #e8edf2;
             background: #f8fafc;
         }
-        .lock-badge {
-            background: rgba(255,255,255,0.2);
-            color: #fff;
-            border-radius: 20px;
-            padding: 3px 9px;
-            font-size: 0.7rem;
-        }
     </style>
 </head>
 <body>
@@ -562,7 +654,7 @@
         <div class="header-title">
             <div class="header-icon">📅</div>
             <div>
-                <h1>{% if is_admin %}سفارش غذا تا پایان ماه جاری{% else %}سفارش غذا - کمپین{% endif %}</h1>
+                <h1>{% if is_admin %}سفارش غذا - مدیریت پرسنل{% else %}سفارش غذا - کمپین{% endif %}</h1>
                 <p>{% if is_admin %}ثبت و مدیریت سفارشات روزانه پرسنل{% else %}مشاهده و ثبت سفارش هفته بعد{% endif %}</p>
             </div>
         </div>
@@ -586,11 +678,9 @@
     <div class="error-message">{{ error }}</div>
     {% endif %}
 
+    <!-- Selector Bar (Admin only) -->
     {% if is_admin %}
-    <!-- ADMIN VIEW - Existing Monthly System -->
-    <!-- Selector Bar -->
     <form method="get" class="selector-bar">
-        {% if is_admin %}
         <div class="selector-group">
             <span class="selector-label">🏢 دپارتمان:</span>
             <select name="department_id" onchange="this.form.submit()">
@@ -603,7 +693,6 @@
             </select>
         </div>
         <div class="divider-v"></div>
-        {% endif %}
         <div class="selector-group">
             <span class="selector-label">👤 کارمند:</span>
             <select name="member_id" onchange="this.form.submit()">
@@ -617,117 +706,9 @@
         </div>
         <noscript><button type="submit">تغییر</button></noscript>
     </form>
-
-    {% if selected_member %}
-    {% if show_selection_warning %}
-    <div class="selection-warning">
-        <strong>کاربر گرامی، توجه داشته باشید:</strong><br>
-        بعد از انتخاب منوی غذایی امکان ویرایش و تغییر منو وجود ندارد و فقط منو را به «حضور ندارم» می‌توانید تغییر دهید.<br>
-        لطفاً در انتخاب منو دقت فرمایید.
-    </div>
     {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="member_id" value="{{ selected_member.id }}">
 
-        <!-- Day Cards -->
-        <div class="days-grid">
-            {% for day in week_data %}
-            <div class="day-card {% if day.weekday_num == 5 %}thursday{% endif %} {% if day.is_locked %}locked{% endif %}">
-                <div class="card-header">
-                    <span class="day-name">{{ day.weekday }}</span>
-                    <span>
-                        {% if day.is_locked %}<span class="lock-badge">🔒 ثبت شده</span>{% endif %}
-                        <span class="day-date">{{ day.date_display }}</span>
-                    </span>
-                </div>
-                <div class="card-body">
-                    {% if day.weekday_num != 5 %}
-                    <!-- روزهای عادی: دو منو + حضور ندارم -->
-                    <div class="menu-choices has-three">
-                        <!-- منوی ۱ -->
-                        <input type="radio" class="choice-menu1"
-                               name="choice_{{ day.date_str }}"
-                               id="m1_{{ day.date_str }}"
-                               value="1"
-                                {% if day.existing_choice == 1 %}checked{% endif %}
-                                {% if day.is_locked %}disabled{% endif %}>
-                        <label class="choice-label" for="m1_{{ day.date_str }}">
-                            <span class="choice-icon">🥘</span>
-                            <span class="choice-name">{{ day.menu1 }}</span>
-                            <span class="choice-badge" style="background:#dcfce7;color:#166534;">منوی ۱</span>
-                        </label>
-
-                        <!-- منوی ۲ -->
-                        <input type="radio" class="choice-menu2"
-                               name="choice_{{ day.date_str }}"
-                               id="m2_{{ day.date_str }}"
-                               value="2"
-                               {% if day.existing_choice == 2 %}checked{% endif %}
-                               {% if day.is_locked %}disabled{% endif %}>
-                        <label class="choice-label" for="m2_{{ day.date_str }}">
-                            <span class="choice-icon">🍛</span>
-                            <span class="choice-name">{{ day.menu2 }}</span>
-                            <span class="choice-badge" style="background:#dbeafe;color:#1e40af;">منوی ۲</span>
-                        </label>
-
-                        <!-- حضور ندارم -->
-                        <div class="choice-absent-wrap">
-                            <input type="radio" class="choice-absent"
-                                   name="choice_{{ day.date_str }}"
-                                   id="abs_{{ day.date_str }}"
-                                   value="0"
-                                   {% if day.existing_choice == 0 %}checked{% endif %}>
-                            <label class="choice-label" for="abs_{{ day.date_str }}">
-                                <span class="choice-icon">❌</span>
-                                <span class="choice-name">حضور ندارم</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {% else %}
-                    <!-- پنج‌شنبه: فقط منوی ۱ + حضور ندارم -->
-                    <div class="menu-choices has-two">
-                        <!-- منوی ۱ -->
-                        <input type="radio" class="choice-menu1"
-                               name="choice_{{ day.date_str }}"
-                               id="m1_{{ day.date_str }}"
-                               value="1"
-                                {% if day.existing_choice == 1 %}checked{% endif %}
-                                {% if day.is_locked %}disabled{% endif %}>
-                        <label class="choice-label" for="m1_{{ day.date_str }}">
-                            <span class="choice-icon">🥘</span>
-                            <span class="choice-name">{{ day.menu1 }}</span>
-                            <span class="choice-badge" style="background:#dcfce7;color:#166534;">منوی ۱</span>
-                        </label>
-
-                        <!-- حضور ندارم -->
-                        <input type="radio" class="choice-absent"
-                               name="choice_{{ day.date_str }}"
-                               id="abs_{{ day.date_str }}"
-                               value="0"
-                               {% if day.existing_choice == 0 %}checked{% endif %}>
-                        <label class="choice-label" for="abs_{{ day.date_str }}">
-                            <span class="choice-icon">❌</span>
-                            <span class="choice-name">حضور ندارم</span>
-                        </label>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Submit -->
-        <div class="submit-area">
-            <span class="submit-info">💡 در حال ثبت سفارش برای <strong>{{ selected_member.name }}</strong></span>
-            <button type="submit" class="btn-submit">
-                ✅ ثبت سفارشات
-            </button>
-        </div>
-    </form>
-
-    {% else %}
+    {% if not selected_member %}
     <div class="empty-state">
         <div class="icon">🍽️</div>
         <h3>کارمندی انتخاب نشده</h3>
@@ -735,27 +716,8 @@
     </div>
     {% endif %}
 
-    <!-- Info Note -->
-    <div class="info-note">
-        🔔 &nbsp;سفارش برای هر روز به‌طور جداگانه ثبت می‌شود و سفارش قبلی روی همان روز بازنویسی می‌شود.
-        پنج‌شنبه‌ها فقط منوی ۱ ارائه می‌شود.
-    </div>
-
-    <!-- Reports -->
-    <div class="reports-section">
-        <div class="reports-title">گزارش‌های مدیریتی</div>
-        <div class="reports-grid">
-            <a href="{% url 'printable_list' %}" class="report-btn" target="_blank">🖨️ لیست تفصیلی امروز</a>
-            <a href="{% url 'aggregate_report' %}" class="report-btn" target="_blank">📊 گزارش تجمیعی امروز</a>
-            <a href="{% url 'weekly_aggregate_report' %}" class="report-btn" target="_blank">📅 گزارش تجمیعی هفتگی</a>
-            <a href="{% url 'date_range_aggregate_report' %}" class="report-btn" target="_blank">📆 گزارش بازه دلخواه</a>
-            <a href="{% url 'daily_menu_report' %}" class="report-btn" target="_blank">📋 گزارش تفکیک روزانه منوها</a>
-        </div>
-    </div>
-
-    {% else %}
-    <!-- USER VIEW - Campaign System -->
-    {% if campaign %}
+    {% if selected_member and campaign %}
+    <!-- Campaign Info -->
     <div class="campaign-info">
         <div class="campaign-header">
             <span class="campaign-badge">{{ campaign.catering.name }} - هفته {{ campaign.week_number }}</span>
@@ -765,18 +727,23 @@
             <span>🏢 کترینگ: {{ campaign.catering.name }}</span>
         </div>
     </div>
-    {% endif %}
 
-    {% if survey_data %}
     <!-- Survey Section (Current Week) -->
+    {% if survey_data %}
     <div class="section">
         <div class="section-title">
             <span class="section-title-icon">📝</span>
             هفته جاری - نظرسنجی غذای خورده شده
+            <span style="font-size: 0.7rem; font-weight: 400; color: #64748b; margin-right: 8px;">
+                ({{ selected_member.name }})
+            </span>
         </div>
 
         <form method="post" action="{% url 'survey' %}">
             {% csrf_token %}
+            {% if is_admin %}
+            <input type="hidden" name="member_id" value="{{ selected_member.id }}">
+            {% endif %}
 
             <div class="days-grid">
                 {% for item in survey_data %}
@@ -786,25 +753,25 @@
                         <span class="day-date">{{ item.date_display }}</span>
                     </div>
                     <div class="card-body">
-                        <div style="margin-bottom: 12px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">منوی انتخابی شما</div>
-                            <div style="font-size: 0.85rem; color: #1a3c5e; font-weight: 600;">{{ item.menu_name }}</div>
+                        <div class="menu-info">
+                            <div class="menu-info-label">منوی انتخابی شما</div>
+                            <div class="menu-info-name">{{ item.menu_name }}</div>
                         </div>
-                        <div style="margin-bottom: 12px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">گزینه</div>
-                            <div style="font-size: 0.85rem; color: #1a3c5e; font-weight: 600;">{{ item.menu_choice }}</div>
+                        <div class="menu-info">
+                            <div class="menu-info-label">گزینه</div>
+                            <div class="menu-info-name">{{ item.menu_choice }}</div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                        <div class="rating-group">
                             <input type="radio" class="rating-good"
                                    name="rating_{{ item.date_str }}"
                                    id="good_{{ item.date_str }}"
                                    value="good"
                                    {% if item.existing_rating == 'good' %}checked{% endif %}
                                    required>
-                            <label style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border-radius: 11px; border: 2px solid #e8edf2; background: #f8fafc; cursor: pointer; transition: border-color 0.18s, background 0.18s, transform 0.1s; text-align: center; min-height: 72px; position: relative;" for="good_{{ item.date_str }}">
-                                <span style="font-size: 1.5rem; line-height: 1;">👍</span>
-                                <span style="font-size: 0.75rem; color: #475569; font-weight: 600; line-height: 1.3;">خوب</span>
+                            <label class="rating-label" for="good_{{ item.date_str }}">
+                                <span class="rating-icon">👍</span>
+                                <span class="rating-name">خوب</span>
                             </label>
 
                             <input type="radio" class="rating-average"
@@ -812,9 +779,9 @@
                                    id="avg_{{ item.date_str }}"
                                    value="average"
                                    {% if item.existing_rating == 'average' %}checked{% endif %}>
-                            <label style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border-radius: 11px; border: 2px solid #e8edf2; background: #f8fafc; cursor: pointer; transition: border-color 0.18s, background 0.18s, transform 0.1s; text-align: center; min-height: 72px; position: relative;" for="avg_{{ item.date_str }}">
-                                <span style="font-size: 1.5rem; line-height: 1;">😐</span>
-                                <span style="font-size: 0.75rem; color: #475569; font-weight: 600; line-height: 1.3;">متوسط</span>
+                            <label class="rating-label" for="avg_{{ item.date_str }}">
+                                <span class="rating-icon">😐</span>
+                                <span class="rating-name">متوسط</span>
                             </label>
 
                             <input type="radio" class="rating-bad"
@@ -822,9 +789,9 @@
                                    id="bad_{{ item.date_str }}"
                                    value="bad"
                                    {% if item.existing_rating == 'bad' %}checked{% endif %}>
-                            <label style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border-radius: 11px; border: 2px solid #e8edf2; background: #f8fafc; cursor: pointer; transition: border-color 0.18s, background 0.18s, transform 0.1s; text-align: center; min-height: 72px; position: relative;" for="bad_{{ item.date_str }}">
-                                <span style="font-size: 1.5rem; line-height: 1;">👎</span>
-                                <span style="font-size: 0.75rem; color: #475569; font-weight: 600; line-height: 1.3;">ضعیف</span>
+                            <label class="rating-label" for="bad_{{ item.date_str }}">
+                                <span class="rating-icon">👎</span>
+                                <span class="rating-name">ضعیف</span>
                             </label>
                         </div>
                     </div>
@@ -843,7 +810,7 @@
     {% else %}
     {% if survey_completed %}
     <div class="completion-message">
-        ✅ نظرسنجی هفته قبل کامل است. می‌توانید سفارش هفته بعد را ثبت کنید.
+        ✅ نظرسنجی هفته قبل برای <strong>{{ selected_member.name }}</strong> کامل است.
     </div>
     {% endif %}
     {% endif %}
@@ -861,8 +828,19 @@
             {% endif %}
         </div>
 
+        {% if show_selection_warning %}
+        <div class="selection-warning">
+            <strong>کاربر گرامی، توجه داشته باشید:</strong><br>
+            بعد از انتخاب منوی غذایی امکان ویرایش و تغییر منو وجود ندارد و فقط منو را به «حضور ندارم» می‌توانید تغییر دهید.<br>
+            لطفاً در انتخاب منو دقت فرمایید.
+        </div>
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
+            {% if is_admin %}
+            <input type="hidden" name="member_id" value="{{ selected_member.id }}">
+            {% endif %}
 
             <div class="days-grid">
                 {% for day in next_week_data %}
@@ -944,7 +922,7 @@
             </div>
 
             <div class="submit-area">
-                <span class="submit-info">💡 ثبت سفارش هفته بعد</span>
+                <span class="submit-info">💡 ثبت سفارش هفته بعد برای <strong>{{ selected_member.name }}</strong></span>
                 <button type="submit" class="btn-submit">
                     ✅ ثبت سفارش هفته بعد
                 </button>
@@ -959,6 +937,30 @@
     </div>
     {% endif %}
 
+    {% elif selected_member and not campaign %}
+    <div class="error-message">
+        هیچ کمپین فعالی وجود ندارد.
+    </div>
+    {% endif %}
+
+    <!-- Info Note -->
+    <div class="info-note">
+        🔔 &nbsp;سفارش برای هر روز به‌طور جداگانه ثبت می‌شود و سفارش قبلی روی همان روز بازنویسی می‌شود.
+        پنج‌شنبه‌ها فقط منوی ۱ ارائه می‌شود.
+    </div>
+
+    {% if is_admin %}
+    <!-- Reports -->
+    <div class="reports-section">
+        <div class="reports-title">گزارش‌های مدیریتی</div>
+        <div class="reports-grid">
+            <a href="{% url 'printable_list' %}" class="report-btn" target="_blank">🖨️ لیست تفصیلی امروز</a>
+            <a href="{% url 'aggregate_report' %}" class="report-btn" target="_blank">📊 گزارش تجمیعی امروز</a>
+            <a href="{% url 'weekly_aggregate_report' %}" class="report-btn" target="_blank">📅 گزارش تجمیعی هفتگی</a>
+            <a href="{% url 'date_range_aggregate_report' %}" class="report-btn" target="_blank">📆 گزارش بازه دلخواه</a>
+            <a href="{% url 'daily_menu_report' %}" class="report-btn" target="_blank">📋 گزارش تفکیک روزانه منوها</a>
+        </div>
+    </div>
     {% endif %}
 
 </div>
