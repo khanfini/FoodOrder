@@ -72,3 +72,54 @@ class OrderSettings(models.Model):
 def get_order_settings():
     settings_obj, _ = OrderSettings.objects.get_or_create(pk=1)
     return settings_obj
+
+
+class Catering(models.Model):
+    name = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "کترینگ"
+        verbose_name_plural = "کترینگ‌ها"
+
+
+class Campaign(models.Model):
+    catering = models.ForeignKey(Catering, on_delete=models.CASCADE, related_name='campaigns')
+    week_number = models.IntegerField(choices=[(1, 'هفته ۱'), (2, 'هفته ۲'), (3, 'هفته ۳'), (4, 'هفته ۴')])
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.catering.name} - هفته {self.week_number}"
+
+    class Meta:
+        verbose_name = "کمپین"
+        verbose_name_plural = "کمپین‌ها"
+        unique_together = ('catering', 'week_number')
+
+
+class Survey(models.Model):
+    RATING_CHOICES = [
+        ('good', 'خوب'),
+        ('average', 'متوسط'),
+        ('bad', 'ضعیف'),
+    ]
+
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='surveys')
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='surveys')
+    date = models.DateField()
+    menu_choice = models.IntegerField(choices=Order.CHOICES)
+    rating = models.CharField(max_length=10, choices=RATING_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.member.name} - {self.campaign} - {self.date} - {self.get_rating_display()}"
+
+    class Meta:
+        verbose_name = "نظرسنجی"
+        verbose_name_plural = "نظرسنجی‌ها"
+        unique_together = ('member', 'campaign', 'date')

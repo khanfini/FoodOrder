@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from appfoodorder.views import login,logout_view,order,printable_list,weekly_order,aggregate_report,weekly_aggregate_report,date_range_aggregate_report,daily_menu_report,export_printable_list_excel
+from appfoodorder.views import login,logout_view,order,printable_list,weekly_order,aggregate_report,weekly_aggregate_report,date_range_aggregate_report,daily_menu_report,export_printable_list_excel,survey
 
 
 urlpatterns = [
@@ -25,7 +25,8 @@ urlpatterns = [
     path('logout/', logout_view, name="logout"),
     path('order/',order,name="order"),
     path('printable/',printable_list,name = 'printable_list'),
-    path('weekly-order/', weekly_order, name='weekly_order'), 
+    path('weekly-order/', weekly_order, name='weekly_order'),
+    path('survey/', survey, name='survey'),
     path('aggregate-report/', aggregate_report, name='aggregate_report'),
     path('weekly-aggregate-report/',weekly_aggregate_report, name='weekly_aggregate_report'),
     path('date-range-aggregate-report/',date_range_aggregate_report, name='date_range_aggregate_report'),
