@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت منوی هفته جاری</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Vazir", "Tahoma", sans-serif;
+            background: #f0f4f8;
+            color: #1a202c;
+            padding: 24px 16px;
+        }
+        .page { max-width: 1050px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #1a3c5e, #526882);
+            color: #fff;
+            border-radius: 18px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .header h1 { font-size: 1.25rem; margin-bottom: 5px; }
+        .header p { font-size: .8rem; color: rgba(255,255,255,.75); }
+        .back {
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,.35);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: .82rem;
+        }
+        .campaign {
+            background: #fff;
+            border: 1px solid #e8edf2;
+            border-radius: 14px;
+            padding: 15px 20px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: .85rem;
+        }
+        .campaign strong { color: #1a3c5e; }
+        .message, .error {
+            border-radius: 12px;
+            padding: 13px 17px;
+            margin-bottom: 16px;
+            font-size: .88rem;
+        }
+        .message { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+        }
+        th, td { padding: 12px; border-bottom: 1px solid #e8edf2; text-align: right; }
+        th { background: #1a3c5e; color: #fff; font-size: .82rem; }
+        td { font-size: .85rem; }
+        tr.thursday { background: #fffdf5; }
+        .date { color: #64748b; font-size: .75rem; direction: ltr; display: inline-block; }
+        input {
+            width: 100%;
+            min-width: 170px;
+            border: 1.5px solid #dbe3eb;
+            border-radius: 9px;
+            padding: 9px 10px;
+            font-family: inherit;
+            font-size: .85rem;
+        }
+        input:focus { outline: none; border-color: #2d6a4f; background: #f0fdf4; }
+        .actions {
+            position: sticky;
+            bottom: 12px;
+            background: #fff;
+            border: 1px solid #e8edf2;
+            box-shadow: 0 5px 20px rgba(0,0,0,.1);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: .8rem;
+            color: #64748b;
+        }
+        button {
+            border: none;
+            border-radius: 10px;
+            background: #2d6a4f;
+            color: #fff;
+            font-family: inherit;
+            font-weight: bold;
+            padding: 11px 24px;
+            cursor: pointer;
+            font-size: .88rem;
+        }
+        .note { font-size: .78rem; color: #64748b; line-height: 1.8; margin-top: 14px; }
+        @media (max-width: 650px) {
+            body { padding: 12px 8px; }
+            th, td { padding: 8px 5px; }
+            input { min-width: 120px; font-size: .78rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <div>
+            <h1>مدیریت منوی هفته جاری</h1>
+            <p>مشاهده و اصلاح غذای همه روزهای هفته</p>
+        </div>
+        <a class="back" href="{% url 'weekly_order' %}">بازگشت به سفارش هفتگی</a>
+    </div>
+
+    {% if saved %}<div class="message">منوی هفته با موفقیت ذخیره شد. گزارش‌ها و صفحه سفارش از نام‌های جدید استفاده می‌کنند.</div>{% endif %}
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+    {% if campaign %}
+    <div class="campaign">
+        <span><strong>کترینگ:</strong> {{ campaign.catering.name }}</span>
+        <span><strong>هفته:</strong> {{ campaign.week_number }}</span>
+        <span><strong>بازه:</strong> {{ campaign_start_display }} تا {{ campaign_end_display }}</span>
+        <span><strong>فایل:</strong> {{ menu_file }}</span>
+    </div>
+
+    {% if menu_days %}
+    <form method="post">
+        {% csrf_token %}
+        <table>
+            <thead>
+            <tr>
+                <th>روز و تاریخ</th>
+                <th>غذای منوی ۱</th>
+                <th>غذای منوی ۲</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for day in menu_days %}
+            <tr {% if day.is_thursday %}class="thursday"{% endif %}>
+                <td>
+                    <strong>{{ day.weekday }}</strong><br>
+                    <span class="date">{{ day.date_display }}</span>
+                </td>
+                <td>
+                    <label for="menu1_{{ day.date_str }}" hidden>غذای منوی ۱ {{ day.weekday }}</label>
+                    <input id="menu1_{{ day.date_str }}" name="menu1_{{ day.date_str }}" value="{{ day.menu1 }}">
+                </td>
+                <td>
+                    <label for="menu2_{{ day.date_str }}" hidden>غذای منوی ۲ {{ day.weekday }}</label>
+                    <input id="menu2_{{ day.date_str }}" name="menu2_{{ day.date_str }}" value="{{ day.menu2 }}">
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="actions">
+            <span>برای نداشتن غذا، خانه آن را خالی بگذارید. تاریخ‌ها تغییر نمی‌کنند.</span>
+            <button type="submit">ذخیره تغییرات منوی هفته</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="error">فایل منوی این هفته پیدا نشد یا تاریخ معتبری ندارد.</div>
+    {% endif %}
+    {% endif %}
+
+    <p class="note">تغییرات در فایل اکسل همان هفته ذخیره می‌شود و در نظرسنجی، سفارش هفتگی، گزارش تفصیلی و سایر گزارش‌ها نمایش داده خواهد شد.</p>
+</div>
+</body>
+</html>

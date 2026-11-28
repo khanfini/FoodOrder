@@ -636,6 +636,89 @@
             font-size: 0.9rem;
         }
 
+        /* ── Monthly Selection History ─────────── */
+        .history-section { padding: 0; overflow: hidden; }
+        .history-heading {
+            padding: 18px 22px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .history-heading .section-title { margin-bottom: 0; }
+        .history-stats { display: flex; gap: 7px; flex-wrap: wrap; }
+        .history-stat {
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: .7rem;
+        }
+        .history-table-wrap { overflow-x: auto; }
+        .history-table { width: 100%; border-collapse: collapse; min-width: 680px; }
+        .history-table th {
+            padding: 10px 14px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: .72rem;
+            text-align: right;
+            border-top: 1px solid #e8edf2;
+            border-bottom: 1px solid #e8edf2;
+        }
+        .history-table td {
+            padding: 8px 14px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: .8rem;
+            vertical-align: middle;
+        }
+        .history-table tr:last-child td { border-bottom: none; }
+        .history-date { direction: ltr; display: inline-block; color: #334155; font-weight: 600; }
+        .history-weekday { color: #64748b; }
+        .history-food {
+            display: block;
+            border-radius: 8px;
+            padding: 7px 10px;
+            border-right: 3px solid transparent;
+            line-height: 1.6;
+        }
+        .history-food.selected {
+            color: #166534;
+            background: #dcfce7;
+            border-right-color: #22c55e;
+            font-weight: 700;
+        }
+        .history-food.unselected {
+            color: #b91c1c;
+            background: #fee2e2;
+            border-right-color: #ef4444;
+            text-decoration: line-through;
+            text-decoration-color: rgba(185,28,28,.35);
+        }
+        .history-food.neutral { color: #94a3b8; background: #f8fafc; }
+        .history-food-content { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .rating-sticker {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 7px;
+            border-radius: 7px;
+            font-size: .64rem;
+            font-weight: 800;
+            white-space: nowrap;
+            transform: rotate(-3deg);
+            border: 1px solid;
+            box-shadow: 0 2px 4px rgba(0,0,0,.08);
+        }
+        .rating-sticker.good { background: #bbf7d0; color: #166534; border-color: #4ade80; }
+        .rating-sticker.average { background: #ffedd5; color: #9a3412; border-color: #fb923c; transform: rotate(2deg); }
+        .rating-sticker.bad { background: #fecaca; color: #991b1b; border-color: #f87171; transform: rotate(-4deg); }
+        .history-status { display: inline-flex; border-radius: 20px; padding: 4px 9px; font-size: .68rem; font-weight: 700; white-space: nowrap; }
+        .history-status.ok { background: #dcfce7; color: #166534; }
+        .history-status.absent { background: #fef3c7; color: #92400e; }
+        .history-status.empty { background: #f1f5f9; color: #64748b; }
+        .history-legend { padding: 10px 22px 16px; font-size: .7rem; color: #64748b; }
+
         /* ── Locked Day State ───────────────────── */
         .day-card.locked .card-header { background: #4b5563; }
         .day-card.locked .choice-label,
@@ -682,6 +765,10 @@
     <div class="error-message">{{ error }}</div>
     {% endif %}
 
+    {% if orders_saved %}
+    <div class="message">سفارش‌های روزانه {{ selected_member.name }} در هفته جاری با موفقیت اصلاح شد.</div>
+    {% endif %}
+
     <!-- Selector Bar (Admin only) -->
     {% if is_admin %}
     <form method="get" class="selector-bar">
@@ -704,6 +791,21 @@
                 {% for m in all_members %}
                     <option value="{{ m.id }}" {% if selected_member and selected_member.id == m.id %}selected{% endif %}>
                         {{ m.name }} — {{ m.department.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <noscript><button type="submit">تغییر</button></noscript>
+    </form>
+    {% elif all_members %}
+    <form method="get" class="selector-bar">
+        <div class="selector-group">
+            <span class="selector-label">👤 کارمند:</span>
+            <select name="member_id" onchange="this.form.submit()">
+                <option value="">انتخاب کارمند...</option>
+                {% for m in all_members %}
+                    <option value="{{ m.id }}" {% if selected_member and selected_member.id == m.id %}selected{% endif %}>
+                        {{ m.name }}
                     </option>
                 {% endfor %}
             </select>
@@ -745,9 +847,7 @@
 
         <form method="post" action="{% url 'survey' %}">
             {% csrf_token %}
-            {% if is_admin %}
             <input type="hidden" name="member_id" value="{{ selected_member.id }}">
-            {% endif %}
 
             <div class="days-grid">
                 {% for item in survey_data %}
@@ -824,6 +924,72 @@
     </div>
     {% endif %}
 
+    {% if is_admin and current_week_data %}
+    <div class="section">
+        <div class="section-title">
+            <span class="section-title-icon">✏️</span>
+            اصلاح سفارش روزانه هفته جاری
+            <span style="font-size: 0.7rem; font-weight: 400; color: #64748b; margin-right: 8px;">
+                ({{ selected_member.name }})
+            </span>
+        </div>
+        <div class="info-note">
+            🔧 &nbsp;به‌عنوان مدیر می‌توانید انتخاب هر روز را به منوی ۱، منوی ۲ یا «حضور ندارم» تغییر دهید؛ حتی اگر سفارش قبلاً ثبت و قفل شده باشد.
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="member_id" value="{{ selected_member.id }}">
+            <input type="hidden" name="edit_current_week" value="1">
+            <input type="hidden" name="department_id" value="{{ selected_dept_id|default:'' }}">
+            <div class="days-grid">
+                {% for day in current_week_data %}
+                <div class="day-card {% if day.weekday_num == 5 %}thursday{% endif %}">
+                    <div class="card-header">
+                        <span class="day-name">{{ day.weekday }}</span>
+                        <span class="day-date">{{ day.date_display }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-choices has-two">
+                            <input type="radio" class="order-choice-menu1"
+                                   name="current_choice_{{ day.date_str }}" id="current_m1_{{ day.date_str }}" value="1"
+                                   {% if day.existing_choice == 1 %}checked{% endif %}>
+                            <label class="order-choice-label" for="current_m1_{{ day.date_str }}">
+                                <span class="choice-icon">🥘</span>
+                                <span class="choice-name">{{ day.menu1 }}</span>
+                                <span class="choice-badge" style="background:#dcfce7;color:#166534;">منوی ۱</span>
+                            </label>
+
+                            <input type="radio" class="order-choice-menu2"
+                                   name="current_choice_{{ day.date_str }}" id="current_m2_{{ day.date_str }}" value="2"
+                                   {% if day.existing_choice == 2 %}checked{% endif %}>
+                            <label class="order-choice-label" for="current_m2_{{ day.date_str }}">
+                                <span class="choice-icon">🍛</span>
+                                <span class="choice-name">{{ day.menu2 }}</span>
+                                <span class="choice-badge" style="background:#dbeafe;color:#1e40af;">منوی ۲</span>
+                            </label>
+
+                            <div class="order-choice-absent-wrap">
+                                <input type="radio" class="order-choice-absent"
+                                       name="current_choice_{{ day.date_str }}" id="current_abs_{{ day.date_str }}" value="0"
+                                       {% if day.existing_choice == 0 %}checked{% endif %}>
+                                <label class="order-choice-label" for="current_abs_{{ day.date_str }}">
+                                    <span class="choice-icon">❌</span>
+                                    <span class="choice-name">حضور ندارم</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="submit-area">
+                <span class="submit-info">اصلاح سفارش روزانه برای <strong>{{ selected_member.name }}</strong></span>
+                <button type="submit" class="btn-submit">💾 ذخیره اصلاحات هفته جاری</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
     <!-- Next Week Order Section -->
     {% if next_week_data %}
     <div class="section next-week-section">
@@ -847,9 +1013,8 @@
 
         <form method="post">
             {% csrf_token %}
-            {% if is_admin %}
             <input type="hidden" name="member_id" value="{{ selected_member.id }}">
-            {% endif %}
+            <input type="hidden" name="submit_next_week" value="1">
 
             <div class="days-grid">
                 {% for day in next_week_data %}
@@ -926,6 +1091,76 @@
     </div>
     {% endif %}
 
+    {% if month_history %}
+    <div class="section history-section">
+        <div class="history-heading">
+            <div class="section-title">
+                <span class="section-title-icon">🗓️</span>
+                کارنامه انتخاب غذای {{ selected_member.name }} در ماه {{ month_title }}
+            </div>
+            <div class="history-stats">
+                <span class="history-stat">منوی ۱: {{ month_stats.menu1 }}</span>
+                <span class="history-stat">منوی ۲: {{ month_stats.menu2 }}</span>
+                <span class="history-stat">حضور ندارد: {{ month_stats.absent }}</span>
+                <span class="history-stat">بدون ثبت: {{ month_stats.unregistered }}</span>
+            </div>
+        </div>
+        <div class="history-table-wrap">
+            <table class="history-table">
+                <thead>
+                <tr>
+                    <th>تاریخ</th>
+                    <th>روز</th>
+                    <th>منوی ۱</th>
+                    <th>منوی ۲</th>
+                    <th>وضعیت انتخاب</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in month_history %}
+                <tr>
+                    <td><span class="history-date">{{ row.date_display }}</span></td>
+                    <td><span class="history-weekday">{{ row.weekday }}</span></td>
+                    <td>
+                        <span class="history-food {% if row.menu1_selected %}selected{% elif row.menu1_unselected %}unselected{% else %}neutral{% endif %}">
+                            <span class="history-food-content">
+                                <span>{% if row.menu1_selected %}✓{% elif row.menu1_unselected %}×{% endif %} {{ row.menu1 }}</span>
+                                {% if row.menu1_selected and row.rating %}
+                                <span class="rating-sticker {{ row.rating.class }}" title="امتیاز کارمند: {{ row.rating.label }}">{{ row.rating.icon }} {{ row.rating.label }}</span>
+                                {% endif %}
+                            </span>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="history-food {% if row.menu2_selected %}selected{% elif row.menu2_unselected %}unselected{% else %}neutral{% endif %}">
+                            <span class="history-food-content">
+                                <span>{% if row.menu2_selected %}✓{% elif row.menu2_unselected %}×{% endif %} {{ row.menu2 }}</span>
+                                {% if row.menu2_selected and row.rating %}
+                                <span class="rating-sticker {{ row.rating.class }}" title="امتیاز کارمند: {{ row.rating.label }}">{{ row.rating.icon }} {{ row.rating.label }}</span>
+                                {% endif %}
+                            </span>
+                        </span>
+                    </td>
+                    <td>
+                        {% if row.is_absent %}
+                            <span class="history-status absent">حضور ندارم</span>
+                        {% elif row.is_unregistered %}
+                            <span class="history-status empty">سفارش ثبت نشده</span>
+                        {% elif row.choice == 1 %}
+                            <span class="history-status ok">منوی ۱ انتخاب شده</span>
+                        {% elif row.choice == 2 %}
+                            <span class="history-status ok">منوی ۲ انتخاب شده</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="history-legend">سبز = غذای انتخاب‌شده؛ قرمز خط‌خورده = غذای انتخاب‌نشده؛ خاکستری = هنوز انتخابی ثبت نشده یا کارمند «حضور ندارم» انتخاب کرده است. استیکر 👍 خوب، 😐 متوسط یا 👎 ضعیف، امتیاز ثبت‌شده کارمند برای همان غذا را نشان می‌دهد.</div>
+    </div>
+    {% endif %}
+
     <!-- Info Note -->
     <div class="info-note">
         🔔 &nbsp;سفارش برای هر روز به‌طور جداگانه ثبت می‌شود و سفارش قبلی روی همان روز بازنویسی می‌شود.
@@ -937,6 +1172,7 @@
     <div class="reports-section">
         <div class="reports-title">گزارش‌های مدیریتی</div>
         <div class="reports-grid">
+            <a href="{% url 'admin_week_menu' %}" class="report-btn">📝 مشاهده و ویرایش منوی هفته جاری</a>
             <a href="{% url 'printable_list' %}" class="report-btn" target="_blank">🖨️ لیست تفصیلی امروز</a>
             <a href="{% url 'aggregate_report' %}" class="report-btn" target="_blank">📊 گزارش تجمیعی امروز</a>
             <a href="{% url 'weekly_aggregate_report' %}" class="report-btn" target="_blank">📅 گزارش تجمیعی هفتگی</a>

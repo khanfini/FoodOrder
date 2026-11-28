@@ -325,9 +325,33 @@
             .steam { opacity: 0.6; }
         }
 
+        .login-footer {
+            position: fixed;
+            right: 20px;
+            bottom: 14px;
+            left: 20px;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 10px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 12px;
+            background: rgba(31, 52, 74, 0.86);
+            backdrop-filter: blur(10px);
+            color: #F3F6F9;
+            font-size: 12px;
+            line-height: 1.8;
+            box-shadow: 0 5px 18px rgba(15, 30, 45, 0.2);
+        }
+        .login-footer .version { color: #F2C14E; font-weight: 700; white-space: nowrap; direction: rtl; }
+        .login-footer .developer { text-align: left; }
+
         /* واکنش‌گرایی برای موبایل و تبلت */
         @media (max-width: 1000px) {
-            body { flex-direction: column; justify-content: center; }
+            body { flex-direction: column; justify-content: center; padding-bottom: 110px; }
             .promo { max-width: 380px; width: 100%; padding: 24px 22px; }
             .promo h1 { font-size: 23px; }
         }
@@ -335,8 +359,18 @@
         @media (max-width: 768px) {
             body {
                 justify-content: center;
-                padding: 20px;
+                padding: 20px 20px 110px;
             }
+            .login-footer {
+                right: 10px;
+                bottom: 8px;
+                left: 10px;
+                justify-content: center;
+                text-align: center;
+                gap: 3px;
+                font-size: 11px;
+            }
+            .login-footer .developer { text-align: center; }
             .login-container {
                 margin: 0 auto;
                 padding: 30px 20px;
@@ -451,5 +485,10 @@
         </div>
     </aside>
     {% endif %}
+
+    <footer class="login-footer">
+        <span class="version">نسخه سازمانی: 4.01</span>
+        <span class="developer">توسعه دهنده: واحد انفورماتیک صباح پخش - تیم BI و توسعه نرم افزار</span>
+    </footer>
 </body>
 </html>
